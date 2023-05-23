@@ -1,13 +1,19 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
+	"github.com/nats-io/nats.go"
 	"github.com/s-larionov/process-manager"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 
+	"github.com/goverland-labs/feed/internal/communicate"
 	"github.com/goverland-labs/feed/internal/config"
+	"github.com/goverland-labs/feed/internal/item"
 	"github.com/goverland-labs/feed/pkg/health"
 	"github.com/goverland-labs/feed/pkg/prometheus"
 )
@@ -16,6 +22,7 @@ type Application struct {
 	sigChan <-chan os.Signal
 	manager *process.Manager
 	cfg     config.App
+	db      *gorm.DB
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -43,6 +50,8 @@ func (a *Application) Run() {
 
 func (a *Application) bootstrap() error {
 	initializers := []func() error{
+		a.initDB,
+
 		// Init Dependencies
 		a.initServices,
 
@@ -63,8 +72,63 @@ func (a *Application) bootstrap() error {
 	return nil
 }
 
+func (a *Application) initDB() error {
+	db, err := gorm.Open(postgres.Open(a.cfg.DB.DSN), &gorm.Config{})
+	if err != nil {
+		return err
+	}
+
+	ps, err := db.DB()
+	if err != nil {
+		return err
+	}
+	ps.SetMaxOpenConns(a.cfg.DB.MaxOpenConnections)
+
+	a.db = db
+	if a.cfg.DB.Debug {
+		a.db = db.Debug()
+	}
+
+	return err
+}
+
 func (a *Application) initServices() error {
-	// TODO
+	nc, err := nats.Connect(
+		a.cfg.Nats.URL,
+		nats.RetryOnFailedConnect(true),
+		nats.MaxReconnects(a.cfg.Nats.MaxReconnects),
+		nats.ReconnectWait(a.cfg.Nats.ReconnectTimeout),
+	)
+	if err != nil {
+		return err
+	}
+
+	pb, err := communicate.NewPublisher(nc)
+	if err != nil {
+		return err
+	}
+
+	err = a.initDataConsumers(nc, pb)
+	if err != nil {
+		return fmt.Errorf("init dao: %w", err)
+	}
+
+	return nil
+}
+
+func (a *Application) initDataConsumers(nc *nats.Conn, pb *communicate.Publisher) error {
+	repo := item.NewRepo(a.db)
+	service, err := item.NewService(repo, pb)
+	if err != nil {
+		return fmt.Errorf("item service: %w", err)
+	}
+
+	cs, err := item.NewDaoConsumer(nc, service)
+	if err != nil {
+		return fmt.Errorf("dao consumer: %w", err)
+	}
+
+	a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
 
 	return nil
 }
