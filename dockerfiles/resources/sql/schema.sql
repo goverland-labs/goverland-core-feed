@@ -1,15 +1,19 @@
 create table feed_items
 (
-    id         bigserial
+    id            bigserial
         primary key,
-    created_at timestamp with time zone,
-    updated_at timestamp with time zone,
-    deleted_at timestamp with time zone,
-    type       text,
-    type_id    text,
-    action     text,
-    snapshot   jsonb
+    created_at    timestamp with time zone,
+    updated_at    timestamp with time zone,
+    deleted_at    timestamp with time zone,
+    dao_id        text,
+    proposal_id   text,
+    discussion_id text,
+    -- dao, proposal, discussion, etc
+    type          text,
+    -- core.dao.created, core.proposal.voting.started, etc
+    action        text,
+    snapshot      jsonb
 );
 
-create index idx_feed_items_type_type_id_action
-    on feed_items (type, type_id, action);
+create index idx_feed_items_dao_proposal_discussion_ids_action
+    on feed_items (dao_id, proposal_id, discussion_id, action);

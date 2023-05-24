@@ -13,8 +13,6 @@ const (
 	TypeProposal = "proposal"
 )
 
-type Action string
-
 const (
 	actionCreated = "created"
 	actionUpdated = "updated"
@@ -23,9 +21,11 @@ const (
 type FeedItem struct {
 	gorm.Model
 
-	Type   Type
-	TypeID string
-	Action Action
+	DaoID        string
+	ProposalID   string
+	DiscussionID string
+	Type         Type
+	Action       string
 
 	Snapshot json.RawMessage
 }

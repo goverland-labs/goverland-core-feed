@@ -34,7 +34,7 @@ func NewDaoConsumer(nc *nats.Conn, s *Service) (*DaoConsumer, error) {
 	return c, nil
 }
 
-func (c *DaoConsumer) handler(action Action) pevents.DaoHandler {
+func (c *DaoConsumer) handler(action string) pevents.DaoHandler {
 	return func(payload pevents.DaoPayload) error {
 		var err error
 		defer func(start time.Time) {
@@ -61,26 +61,26 @@ func (c *DaoConsumer) handler(action Action) pevents.DaoHandler {
 	}
 }
 
-func (c *DaoConsumer) convertToFeedItem(pl pevents.DaoPayload, action Action) (FeedItem, error) {
+func (c *DaoConsumer) convertToFeedItem(pl pevents.DaoPayload, action string) (FeedItem, error) {
 	b, err := json.Marshal(pl)
 	if err != nil {
 		return FeedItem{}, fmt.Errorf("cant marshal payload: %w", err)
 	}
 
 	return FeedItem{
+		DaoID:    pl.ID,
 		Type:     TypeDao,
-		TypeID:   pl.ID,
 		Action:   action,
 		Snapshot: b,
 	}, nil
 }
 
 func (c *DaoConsumer) Start(ctx context.Context) error {
-	cc, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectDaoCreated, c.handler(actionCreated))
+	cc, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectDaoCreated, c.handler(pevents.SubjectDaoCreated))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", groupName, pevents.SubjectDaoCreated, err)
 	}
-	cu, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectDaoUpdated, c.handler(actionUpdated))
+	cu, err := client.NewConsumer(ctx, c.conn, groupName, pevents.SubjectDaoUpdated, c.handler(pevents.SubjectDaoUpdated))
 	if err != nil {
 		return fmt.Errorf("consume for %s/%s: %w", groupName, pevents.SubjectDaoUpdated, err)
 	}
