@@ -123,12 +123,19 @@ func (a *Application) initDataConsumers(nc *nats.Conn, pb *communicate.Publisher
 		return fmt.Errorf("item service: %w", err)
 	}
 
-	cs, err := item.NewDaoConsumer(nc, service)
+	dc, err := item.NewDaoConsumer(nc, service)
 	if err != nil {
-		return fmt.Errorf("dao consumer: %w", err)
+		return fmt.Errorf("item dao consumer: %w", err)
 	}
 
-	a.manager.AddWorker(process.NewCallbackWorker("dao-consumer", cs.Start))
+	a.manager.AddWorker(process.NewCallbackWorker("item-dao-consumer", dc.Start))
+
+	pc, err := item.NewProposalConsumer(nc, service)
+	if err != nil {
+		return fmt.Errorf("item proposal consumer: %w", err)
+	}
+
+	a.manager.AddWorker(process.NewCallbackWorker("item-proposal-consumer", pc.Start))
 
 	return nil
 }
