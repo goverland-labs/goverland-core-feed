@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package internalapi;
+
+option go_package = ".;internalapi";
+
+service Subscriber {
+  rpc Create(CreateSubscriberRequest) returns (CreateSubscriberResponse);
+}
+
+message CreateSubscriberRequest {
+  string id = 1;
+  optional string webhookURL = 2;
+}
+
+message CreateSubscriberResponse {
+  string userID = 1;
+}
