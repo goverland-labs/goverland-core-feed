@@ -14,8 +14,11 @@ import (
 	"github.com/goverland-labs/feed/internal/communicate"
 	"github.com/goverland-labs/feed/internal/config"
 	"github.com/goverland-labs/feed/internal/item"
+	"github.com/goverland-labs/feed/internal/subscriber"
+	"github.com/goverland-labs/feed/pkg/grpcsrv"
 	"github.com/goverland-labs/feed/pkg/health"
 	"github.com/goverland-labs/feed/pkg/prometheus"
+	"github.com/goverland-labs/feed/protobuf/internalapi"
 )
 
 type Application struct {
@@ -113,6 +116,11 @@ func (a *Application) initServices() error {
 		return fmt.Errorf("init dao: %w", err)
 	}
 
+	err = a.initSubscribers()
+	if err != nil {
+		return fmt.Errorf("init subscribers: %w", err)
+	}
+
 	return nil
 }
 
@@ -136,6 +144,20 @@ func (a *Application) initDataConsumers(nc *nats.Conn, pb *communicate.Publisher
 	}
 
 	a.manager.AddWorker(process.NewCallbackWorker("item-proposal-consumer", pc.Start))
+
+	return nil
+}
+
+func (a *Application) initSubscribers() error {
+	repo := subscriber.NewRepo(a.db)
+	service, err := subscriber.NewService(repo)
+	if err != nil {
+		return fmt.Errorf("subsceiber service: %w", err)
+	}
+
+	srv := grpcsrv.NewGrpcServer()
+	internalapi.RegisterSubscriberServer(srv, subscriber.NewServer(service))
+	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("subscriber", srv, a.cfg.InternalAPI.Bind))
 
 	return nil
 }

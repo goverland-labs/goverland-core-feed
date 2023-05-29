@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package internalapi;
+
+import "google/protobuf/empty.proto";
+
+option go_package = ".;internalapi";
+
+service Subscriber {
+  rpc Create(CreateSubscriberRequest) returns (CreateSubscriberResponse);
+  rpc Update(UpdateSubscriberRequest) returns (google.protobuf.Empty);
+}
+
+message CreateSubscriberRequest {
+  string id = 1;
+  optional string webhookURL = 2;
+}
+
+message CreateSubscriberResponse {
+  string userID = 1;
+}
+
+message UpdateSubscriberRequest {
+  string id = 1;
+  optional string webhookURL = 2;
+}

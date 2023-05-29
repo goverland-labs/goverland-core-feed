@@ -17,3 +17,13 @@ create table feed_items
 
 create index idx_feed_items_dao_proposal_discussion_ids_action
     on feed_items (dao_id, proposal_id, discussion_id, action);
+
+create table subscribers
+(
+    id             text not null
+        primary key,
+    created_at  timestamp with time zone,
+    updated_at  timestamp with time zone,
+    deleted_at  timestamp with time zone,
+    webhook_url text
+);
