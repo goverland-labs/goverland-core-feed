@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package internalapi;
+
+import "google/protobuf/empty.proto";
+
+option go_package = ".;internalapi";
+
+service Subscription {
+  rpc Subscribe(SubscribeRequest) returns (google.protobuf.Empty);
+  rpc Unsubscribe(UnsubscribeRequest) returns (google.protobuf.Empty);
+}
+
+message SubscribeRequest {
+  string subscriber_id = 1;
+  string dao_id = 2;
+}
+
+message UnsubscribeRequest {
+  string subscriber_id = 1;
+  string dao_id = 2;
+}

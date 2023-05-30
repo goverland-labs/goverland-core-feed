@@ -16,7 +16,7 @@ import (
 
 type SubscriberProvider interface {
 	GetByID(_ context.Context, id string) (*Subscriber, error)
-	Create(_ context.Context, item Subscriber) error
+	Create(_ context.Context, item Subscriber) (*Subscriber, error)
 	Update(_ context.Context, item Subscriber) error
 }
 
@@ -43,17 +43,7 @@ func (s *Server) Create(ctx context.Context, req *proto.CreateSubscriberRequest)
 		}
 	}
 
-	sub, err := s.sp.GetByID(ctx, req.GetSubscriberId())
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Error().Err(err).Msgf("get subscriber: %s", req.GetSubscriberId())
-		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
-	}
-
-	if err == nil {
-		return &proto.CreateSubscriberResponse{SubscriberId: sub.ID}, nil
-	}
-
-	err = s.sp.Create(ctx, Subscriber{
+	_, err := s.sp.Create(ctx, Subscriber{
 		ID:         req.GetSubscriberId(),
 		WebhookURL: req.GetWebhookUrl(),
 	})
@@ -61,6 +51,8 @@ func (s *Server) Create(ctx context.Context, req *proto.CreateSubscriberRequest)
 		log.Error().Err(err).Msgf("create subscriber: %s", req.GetSubscriberId())
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	log.Debug().Msgf("create subscriber: %s", req.GetSubscriberId())
 
 	return &proto.CreateSubscriberResponse{SubscriberId: req.GetSubscriberId()}, nil
 }
@@ -76,19 +68,20 @@ func (s *Server) Update(ctx context.Context, req *proto.UpdateSubscriberRequest)
 		}
 	}
 
-	_, err := s.sp.GetByID(ctx, req.GetSubscriberId())
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
-	}
-
-	err = s.sp.Update(ctx, Subscriber{
+	err := s.sp.Update(ctx, Subscriber{
 		ID:         req.GetSubscriberId(),
 		WebhookURL: req.GetWebhookUrl(),
 	})
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
+	}
+
 	if err != nil {
 		log.Error().Err(err).Msgf("update subscriber: %s", req.GetSubscriberId())
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	log.Debug().Msgf("update subscriber: %s", req.GetSubscriberId())
 
 	return &emptypb.Empty{}, nil
 }

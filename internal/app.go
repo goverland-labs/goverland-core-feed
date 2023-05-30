@@ -8,6 +8,7 @@ import (
 
 	"github.com/nats-io/nats.go"
 	"github.com/s-larionov/process-manager"
+	"google.golang.org/grpc"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/goverland-labs/feed/internal/config"
 	"github.com/goverland-labs/feed/internal/item"
 	"github.com/goverland-labs/feed/internal/subscriber"
+	"github.com/goverland-labs/feed/internal/subscription"
 	"github.com/goverland-labs/feed/pkg/grpcsrv"
 	"github.com/goverland-labs/feed/pkg/health"
 	"github.com/goverland-labs/feed/pkg/prometheus"
@@ -116,9 +118,9 @@ func (a *Application) initServices() error {
 		return fmt.Errorf("init dao: %w", err)
 	}
 
-	err = a.initSubscribers()
+	err = a.initAPI()
 	if err != nil {
-		return fmt.Errorf("init subscribers: %w", err)
+		return fmt.Errorf("init API: %w", err)
 	}
 
 	return nil
@@ -148,16 +150,39 @@ func (a *Application) initDataConsumers(nc *nats.Conn, pb *communicate.Publisher
 	return nil
 }
 
-func (a *Application) initSubscribers() error {
+func (a *Application) initAPI() error {
+	srv := grpcsrv.NewGrpcServer()
+
+	if err := a.initSubscribers(srv); err != nil {
+		return err
+	}
+	if err := a.initSubscription(srv); err != nil {
+		return err
+	}
+
+	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
+
+	return nil
+}
+
+func (a *Application) initSubscribers(srv *grpc.Server) error {
 	repo := subscriber.NewRepo(a.db)
 	service, err := subscriber.NewService(repo)
 	if err != nil {
 		return fmt.Errorf("subsceiber service: %w", err)
 	}
-
-	srv := grpcsrv.NewGrpcServer()
 	internalapi.RegisterSubscriberServer(srv, subscriber.NewServer(service))
-	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("subscriber", srv, a.cfg.InternalAPI.Bind))
+
+	return nil
+}
+
+func (a *Application) initSubscription(srv *grpc.Server) error {
+	repo := subscription.NewRepo(a.db)
+	service, err := subscription.NewService(repo)
+	if err != nil {
+		return fmt.Errorf("subscription service: %w", err)
+	}
+	internalapi.RegisterSubscriptionServer(srv, subscription.NewServer(service))
 
 	return nil
 }

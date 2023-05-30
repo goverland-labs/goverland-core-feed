@@ -2,7 +2,10 @@ package subscriber
 
 import (
 	"context"
+	"errors"
 	"fmt"
+
+	"gorm.io/gorm"
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=subscriber . DataProvider
@@ -23,17 +26,31 @@ func NewService(r DataProvider) (*Service, error) {
 	}, nil
 }
 
-func (s *Service) Create(_ context.Context, item Subscriber) error {
-	err := s.repo.Create(item)
-	if err != nil {
-		return fmt.Errorf("create subscriber: %w", err)
+func (s *Service) Create(ctx context.Context, item Subscriber) (*Subscriber, error) {
+	sub, err := s.GetByID(ctx, item.ID)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, fmt.Errorf("get subscriber: %w", err)
 	}
 
-	return nil
+	if err == nil {
+		return sub, nil
+	}
+
+	err = s.repo.Create(item)
+	if err != nil {
+		return nil, fmt.Errorf("create subscriber: %w", err)
+	}
+
+	return &item, err
 }
 
-func (s *Service) Update(_ context.Context, item Subscriber) error {
-	err := s.repo.Update(item)
+func (s *Service) Update(ctx context.Context, item Subscriber) error {
+	_, err := s.GetByID(ctx, item.ID)
+	if err != nil {
+		return fmt.Errorf("get subscriber: %w", err)
+	}
+
+	err = s.repo.Update(item)
 	if err != nil {
 		return fmt.Errorf("update subscriber: %w", err)
 	}

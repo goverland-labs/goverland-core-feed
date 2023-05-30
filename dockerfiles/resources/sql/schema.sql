@@ -20,10 +20,30 @@ create index idx_feed_items_dao_proposal_discussion_ids_action
 
 create table subscribers
 (
-    id             text not null
+    id          text not null
         primary key,
     created_at  timestamp with time zone,
     updated_at  timestamp with time zone,
     deleted_at  timestamp with time zone,
     webhook_url text
 );
+
+create table subscriptions
+(
+    id            bigserial
+        primary key,
+    created_at    timestamp with time zone,
+    updated_at    timestamp with time zone,
+    deleted_at    timestamp with time zone,
+    subscriber_id text,
+    dao_id        text
+);
+
+create index idx_subscriptions_deleted_at
+    on subscriptions (deleted_at);
+
+create index idx_subscriptions_subscriber_id_dao_id
+    on subscriptions (subscriber_id, dao_id);
+
+
+
