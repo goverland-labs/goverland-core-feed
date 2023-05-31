@@ -32,3 +32,16 @@ func (r *Repo) GetByID(subscriberID, daoID string) (Subscription, error) {
 
 	return res, err
 }
+
+// todo: think about getting this elements by chunks
+func (r *Repo) GetSubscribers(daoID string) ([]Subscription, error) {
+	var res []Subscription
+	err := r.db.
+		Where(&Subscription{
+			DaoID: daoID,
+		}).
+		Find(&res).
+		Error
+
+	return res, err
+}

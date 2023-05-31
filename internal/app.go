@@ -167,7 +167,8 @@ func (a *Application) initAPI() error {
 
 func (a *Application) initSubscribers(srv *grpc.Server) error {
 	repo := subscriber.NewRepo(a.db)
-	service, err := subscriber.NewService(repo)
+	cache := subscriber.NewCache()
+	service, err := subscriber.NewService(repo, cache)
 	if err != nil {
 		return fmt.Errorf("subsceiber service: %w", err)
 	}
@@ -178,7 +179,8 @@ func (a *Application) initSubscribers(srv *grpc.Server) error {
 
 func (a *Application) initSubscription(srv *grpc.Server) error {
 	repo := subscription.NewRepo(a.db)
-	service, err := subscription.NewService(repo)
+	cache := subscription.NewCache()
+	service, err := subscription.NewService(repo, cache)
 	if err != nil {
 		return fmt.Errorf("subscription service: %w", err)
 	}
