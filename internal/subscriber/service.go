@@ -11,6 +11,10 @@ import (
 
 //go:generate mockgen -destination=mocks_test.go -package=subscriber . DataProvider
 
+const (
+	IDKey = "subscriber_id_key"
+)
+
 type DataProvider interface {
 	Create(*Subscriber) error
 	Update(*Subscriber) error
@@ -98,4 +102,8 @@ func (s *Service) GetByID(_ context.Context, id string) (*Subscriber, error) {
 	go s.cache.UpsertItem(sub.ID, sub)
 
 	return sub, nil
+}
+
+func GetSubscriberID(ctx context.Context) string {
+	return ctx.Value(IDKey).(string)
 }

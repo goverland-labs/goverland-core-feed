@@ -12,11 +12,9 @@ service Subscription {
 }
 
 message SubscribeRequest {
-  string subscriber_id = 1;
   string dao_id = 2;
 }
 
 message UnsubscribeRequest {
-  string subscriber_id = 1;
   string dao_id = 2;
 }

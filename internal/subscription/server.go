@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 
+	"github.com/goverland-labs/feed/internal/subscriber"
 	proto "github.com/goverland-labs/feed/protobuf/internalapi"
 )
 
@@ -31,39 +32,35 @@ func NewServer(sp SubscriptionProvider) *Server {
 }
 
 func (s *Server) Subscribe(ctx context.Context, req *proto.SubscribeRequest) (*emptypb.Empty, error) {
-	if req.GetSubscriberId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
-	}
+	subID := subscriber.GetSubscriberID(ctx)
 
 	if req.GetDaoId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}
 
 	_, err := s.sp.Subscribe(ctx, Subscription{
-		SubscriberID: req.GetSubscriberId(),
+		SubscriberID: subID,
 		DaoID:        req.GetDaoId(),
 	})
 	if err != nil {
-		log.Error().Err(err).Msgf("subscribe: %s - %s", req.GetSubscriberId(), req.GetDaoId())
+		log.Error().Err(err).Msgf("subscribe: %s - %s", subID, req.GetDaoId())
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	log.Debug().Msgf("subscribe: %s - %s", req.GetSubscriberId(), req.GetDaoId())
+	log.Debug().Msgf("subscribe: %s - %s", subID, req.GetDaoId())
 
 	return &emptypb.Empty{}, nil
 }
 
 func (s *Server) Unsubscribe(ctx context.Context, req *proto.UnsubscribeRequest) (*emptypb.Empty, error) {
-	if req.GetSubscriberId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
-	}
+	subID := subscriber.GetSubscriberID(ctx)
 
 	if req.GetDaoId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "invalid dao ID")
 	}
 
 	err := s.sp.Unsubscribe(ctx, Subscription{
-		SubscriberID: req.GetSubscriberId(),
+		SubscriberID: subID,
 		DaoID:        req.GetDaoId(),
 	})
 
@@ -72,11 +69,11 @@ func (s *Server) Unsubscribe(ctx context.Context, req *proto.UnsubscribeRequest)
 	}
 
 	if err != nil {
-		log.Error().Err(err).Msgf("unsubscribe: %s - %s", req.GetSubscriberId(), req.GetDaoId())
+		log.Error().Err(err).Msgf("unsubscribe: %s - %s", subID, req.GetDaoId())
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	log.Debug().Msgf("unsubscribe: %s - %s", req.GetSubscriberId(), req.GetDaoId())
+	log.Debug().Msgf("unsubscribe: %s - %s", subID, req.GetDaoId())
 
 	return &emptypb.Empty{}, nil
 }

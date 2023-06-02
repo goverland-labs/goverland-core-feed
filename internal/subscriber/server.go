@@ -52,10 +52,7 @@ func (s *Server) Create(ctx context.Context, req *proto.CreateSubscriberRequest)
 }
 
 func (s *Server) Update(ctx context.Context, req *proto.UpdateSubscriberRequest) (*emptypb.Empty, error) {
-	if req.GetSubscriberId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
-	}
-
+	subID := GetSubscriberID(ctx)
 	if req.GetWebhookUrl() != "" {
 		if _, err := url.ParseRequestURI(req.GetWebhookUrl()); err != nil {
 			return nil, status.Error(codes.InvalidArgument, "invalid webhook url")
@@ -63,7 +60,7 @@ func (s *Server) Update(ctx context.Context, req *proto.UpdateSubscriberRequest)
 	}
 
 	err := s.sp.Update(ctx, Subscriber{
-		ID:         req.GetSubscriberId(),
+		ID:         subID,
 		WebhookURL: req.GetWebhookUrl(),
 	})
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -71,11 +68,11 @@ func (s *Server) Update(ctx context.Context, req *proto.UpdateSubscriberRequest)
 	}
 
 	if err != nil {
-		log.Error().Err(err).Msgf("update subscriber: %s", req.GetSubscriberId())
+		log.Error().Err(err).Msgf("update subscriber: %s", subID)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	log.Debug().Msgf("update subscriber: %s", req.GetSubscriberId())
+	log.Debug().Msgf("update subscriber: %s", subID)
 
 	return &emptypb.Empty{}, nil
 }
