@@ -16,7 +16,7 @@ import (
 
 type SubscriberProvider interface {
 	GetByID(_ context.Context, id string) (*Subscriber, error)
-	Create(_ context.Context, item Subscriber) (*Subscriber, error)
+	Create(_ context.Context, webhookURL string) (*Subscriber, error)
 	Update(_ context.Context, item Subscriber) error
 }
 
@@ -33,28 +33,22 @@ func NewServer(sp SubscriberProvider) *Server {
 }
 
 func (s *Server) Create(ctx context.Context, req *proto.CreateSubscriberRequest) (*proto.CreateSubscriberResponse, error) {
-	if req.GetSubscriberId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
-	}
-
 	if req.GetWebhookUrl() != "" {
 		if _, err := url.ParseRequestURI(req.GetWebhookUrl()); err != nil {
 			return nil, status.Error(codes.InvalidArgument, "invalid webhook url")
 		}
 	}
 
-	_, err := s.sp.Create(ctx, Subscriber{
-		ID:         req.GetSubscriberId(),
-		WebhookURL: req.GetWebhookUrl(),
-	})
+	sub, err := s.sp.Create(ctx, req.GetWebhookUrl())
 	if err != nil {
-		log.Error().Err(err).Msgf("create subscriber: %s", req.GetSubscriberId())
+		log.Error().Err(err).Msg("create subscriber")
+
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	log.Debug().Msgf("create subscriber: %s", req.GetSubscriberId())
+	log.Debug().Msgf("create subscriber: %s", sub.ID)
 
-	return &proto.CreateSubscriberResponse{SubscriberId: req.GetSubscriberId()}, nil
+	return &proto.CreateSubscriberResponse{SubscriberId: sub.ID}, nil
 }
 
 func (s *Server) Update(ctx context.Context, req *proto.UpdateSubscriberRequest) (*emptypb.Empty, error) {

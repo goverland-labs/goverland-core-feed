@@ -28,6 +28,9 @@ type Application struct {
 	manager *process.Manager
 	cfg     config.App
 	db      *gorm.DB
+
+	subscribers   *subscriber.Service
+	subscriptions *subscription.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -113,14 +116,14 @@ func (a *Application) initServices() error {
 		return err
 	}
 
-	err = a.initDataConsumers(nc, pb)
-	if err != nil {
-		return fmt.Errorf("init dao: %w", err)
-	}
-
 	err = a.initAPI()
 	if err != nil {
 		return fmt.Errorf("init API: %w", err)
+	}
+
+	err = a.initDataConsumers(nc, pb)
+	if err != nil {
+		return fmt.Errorf("init dao: %w", err)
 	}
 
 	return nil
@@ -128,7 +131,7 @@ func (a *Application) initServices() error {
 
 func (a *Application) initDataConsumers(nc *nats.Conn, pb *communicate.Publisher) error {
 	repo := item.NewRepo(a.db)
-	service, err := item.NewService(repo, pb)
+	service, err := item.NewService(repo, pb, a.subscribers, a.subscriptions)
 	if err != nil {
 		return fmt.Errorf("item service: %w", err)
 	}
@@ -172,6 +175,7 @@ func (a *Application) initSubscribers(srv *grpc.Server) error {
 	if err != nil {
 		return fmt.Errorf("subsceiber service: %w", err)
 	}
+	a.subscribers = service
 	internalapi.RegisterSubscriberServer(srv, subscriber.NewServer(service))
 
 	return nil
@@ -184,6 +188,7 @@ func (a *Application) initSubscription(srv *grpc.Server) error {
 	if err != nil {
 		return fmt.Errorf("subscription service: %w", err)
 	}
+	a.subscriptions = service
 	internalapi.RegisterSubscriptionServer(srv, subscription.NewServer(service))
 
 	return nil

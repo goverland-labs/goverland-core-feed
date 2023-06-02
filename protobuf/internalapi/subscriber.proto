@@ -12,7 +12,6 @@ service Subscriber {
 }
 
 message CreateSubscriberRequest {
-  string subscriber_id = 1;
   optional string webhook_url = 2;
 }
 

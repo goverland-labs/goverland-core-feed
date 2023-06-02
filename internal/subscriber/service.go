@@ -5,14 +5,15 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=subscriber . DataProvider
 
 type DataProvider interface {
-	Create(Subscriber) error
-	Update(Subscriber) error
+	Create(*Subscriber) error
+	Update(*Subscriber) error
 	GetByID(string) (*Subscriber, error)
 }
 
@@ -33,38 +34,53 @@ func NewService(r DataProvider, c Cacher) (*Service, error) {
 	}, nil
 }
 
-func (s *Service) Create(ctx context.Context, item Subscriber) (*Subscriber, error) {
-	sub, err := s.GetByID(ctx, item.ID)
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, fmt.Errorf("get subscriber: %w", err)
+func (s *Service) Create(ctx context.Context, webhookURL string) (*Subscriber, error) {
+	subID, err := s.generateSubscriberID(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("generate subscriber id: %w", err)
 	}
 
-	if err == nil {
-		return sub, nil
+	item := &Subscriber{
+		ID:         subID,
+		WebhookURL: webhookURL,
 	}
-
 	err = s.repo.Create(item)
 	if err != nil {
 		return nil, fmt.Errorf("create subscriber: %w", err)
 	}
 
-	go s.cache.UpsertItem(item.ID, &item)
+	go s.cache.UpsertItem(item.ID, item)
 
-	return &item, err
+	return item, err
+}
+
+func (s *Service) generateSubscriberID(ctx context.Context) (string, error) {
+	subID := uuid.New().String()
+	_, err := s.GetByID(ctx, subID)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return subID, nil
+	}
+
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return "", fmt.Errorf("get subscriber: %w", err)
+	}
+
+	return s.generateSubscriberID(ctx)
 }
 
 func (s *Service) Update(ctx context.Context, item Subscriber) error {
-	_, err := s.GetByID(ctx, item.ID)
+	sub, err := s.GetByID(ctx, item.ID)
 	if err != nil {
 		return fmt.Errorf("get subscriber: %w", err)
 	}
 
-	err = s.repo.Update(item)
+	sub.WebhookURL = item.WebhookURL
+	err = s.repo.Update(sub)
 	if err != nil {
 		return fmt.Errorf("update subscriber: %w", err)
 	}
 
-	go s.cache.UpsertItem(item.ID, &item)
+	go s.cache.UpsertItem(item.ID, sub)
 
 	return nil
 }
