@@ -15,6 +15,7 @@ import (
 	"github.com/goverland-labs/feed/internal/config"
 	"github.com/goverland-labs/feed/internal/item"
 	"github.com/goverland-labs/feed/internal/subscriber"
+	"github.com/goverland-labs/feed/internal/subscription"
 	"github.com/goverland-labs/feed/pkg/grpcsrv"
 	"github.com/goverland-labs/feed/pkg/health"
 	"github.com/goverland-labs/feed/pkg/prometheus"
@@ -26,6 +27,9 @@ type Application struct {
 	manager *process.Manager
 	cfg     config.App
 	db      *gorm.DB
+
+	subscribers   *subscriber.Service
+	subscriptions *subscription.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -111,14 +115,21 @@ func (a *Application) initServices() error {
 		return err
 	}
 
+	if err = a.initSubscribers(); err != nil {
+		return err
+	}
+	if err = a.initSubscription(); err != nil {
+		return err
+	}
+
 	err = a.initDataConsumers(nc, pb)
 	if err != nil {
 		return fmt.Errorf("init dao: %w", err)
 	}
 
-	err = a.initSubscribers()
+	err = a.initAPI()
 	if err != nil {
-		return fmt.Errorf("init subscribers: %w", err)
+		return fmt.Errorf("init API: %w", err)
 	}
 
 	return nil
@@ -126,7 +137,7 @@ func (a *Application) initServices() error {
 
 func (a *Application) initDataConsumers(nc *nats.Conn, pb *communicate.Publisher) error {
 	repo := item.NewRepo(a.db)
-	service, err := item.NewService(repo, pb)
+	service, err := item.NewService(repo, pb, a.subscribers, a.subscriptions)
 	if err != nil {
 		return fmt.Errorf("item service: %w", err)
 	}
@@ -148,16 +159,45 @@ func (a *Application) initDataConsumers(nc *nats.Conn, pb *communicate.Publisher
 	return nil
 }
 
+// todo: move exclude path to config?
+func (a *Application) initAPI() error {
+	authInterceptor := grpcsrv.NewAuthInterceptor(a.subscribers)
+	srv := grpcsrv.NewGrpcServer(
+		[]string{
+			"/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo",
+			"/internalapi.Subscriber/Create",
+		},
+		authInterceptor.AuthAndIdentifyTickerFunc,
+	)
+
+	internalapi.RegisterSubscriberServer(srv, subscriber.NewServer(a.subscribers))
+	internalapi.RegisterSubscriptionServer(srv, subscription.NewServer(a.subscriptions))
+
+	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
+
+	return nil
+}
+
 func (a *Application) initSubscribers() error {
 	repo := subscriber.NewRepo(a.db)
-	service, err := subscriber.NewService(repo)
+	cache := subscriber.NewCache()
+	service, err := subscriber.NewService(repo, cache)
 	if err != nil {
 		return fmt.Errorf("subsceiber service: %w", err)
 	}
+	a.subscribers = service
 
-	srv := grpcsrv.NewGrpcServer()
-	internalapi.RegisterSubscriberServer(srv, subscriber.NewServer(service))
-	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("subscriber", srv, a.cfg.InternalAPI.Bind))
+	return nil
+}
+
+func (a *Application) initSubscription() error {
+	repo := subscription.NewRepo(a.db)
+	cache := subscription.NewCache()
+	service, err := subscription.NewService(repo, cache)
+	if err != nil {
+		return fmt.Errorf("subscription service: %w", err)
+	}
+	a.subscriptions = service
 
 	return nil
 }

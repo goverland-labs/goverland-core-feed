@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.12
-// source: protocol.proto
+// source: subscriber.proto
 
 package internalapi
 
@@ -138,5 +138,5 @@ var Subscriber_ServiceDesc = grpc.ServiceDesc{
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "protocol.proto",
+	Metadata: "subscriber.proto",
 }

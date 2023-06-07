@@ -14,12 +14,12 @@ func NewRepo(db *gorm.DB) *Repo {
 	return &Repo{db: db}
 }
 
-func (r *Repo) Create(item Subscriber) error {
-	return r.db.Create(&item).Error
+func (r *Repo) Create(item *Subscriber) error {
+	return r.db.Create(item).Error
 }
 
-func (r *Repo) Update(item Subscriber) error {
-	return r.db.Save(&item).Error
+func (r *Repo) Update(item *Subscriber) error {
+	return r.db.Save(item).Error
 }
 
 func (r *Repo) GetByID(id string) (*Subscriber, error) {

@@ -16,7 +16,7 @@ import (
 
 type SubscriberProvider interface {
 	GetByID(_ context.Context, id string) (*Subscriber, error)
-	Create(_ context.Context, item Subscriber) error
+	Create(_ context.Context, webhookURL string) (*Subscriber, error)
 	Update(_ context.Context, item Subscriber) error
 }
 
@@ -33,62 +33,46 @@ func NewServer(sp SubscriberProvider) *Server {
 }
 
 func (s *Server) Create(ctx context.Context, req *proto.CreateSubscriberRequest) (*proto.CreateSubscriberResponse, error) {
-	if req.GetId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
-	}
-
-	if req.GetWebhookURL() != "" {
-		if _, err := url.ParseRequestURI(req.GetWebhookURL()); err != nil {
+	if req.GetWebhookUrl() != "" {
+		if _, err := url.ParseRequestURI(req.GetWebhookUrl()); err != nil {
 			return nil, status.Error(codes.InvalidArgument, "invalid webhook url")
 		}
 	}
 
-	sub, err := s.sp.GetByID(ctx, req.GetId())
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		log.Error().Err(err).Msgf("get subscriber: %s", req.GetId())
-		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
-	}
-
-	if err == nil {
-		return &proto.CreateSubscriberResponse{UserID: sub.ID}, nil
-	}
-
-	err = s.sp.Create(ctx, Subscriber{
-		ID:         req.GetId(),
-		WebhookURL: req.GetWebhookURL(),
-	})
+	sub, err := s.sp.Create(ctx, req.GetWebhookUrl())
 	if err != nil {
-		log.Error().Err(err).Msgf("create subscriber: %s", req.GetId())
+		log.Error().Err(err).Msg("create subscriber")
+
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	return &proto.CreateSubscriberResponse{UserID: req.GetId()}, nil
+	log.Debug().Msgf("create subscriber: %s", sub.ID)
+
+	return &proto.CreateSubscriberResponse{SubscriberId: sub.ID}, nil
 }
 
 func (s *Server) Update(ctx context.Context, req *proto.UpdateSubscriberRequest) (*emptypb.Empty, error) {
-	if req.GetId() == "" {
-		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
-	}
-
-	if req.GetWebhookURL() != "" {
-		if _, err := url.ParseRequestURI(req.GetWebhookURL()); err != nil {
+	subID := GetSubscriberID(ctx)
+	if req.GetWebhookUrl() != "" {
+		if _, err := url.ParseRequestURI(req.GetWebhookUrl()); err != nil {
 			return nil, status.Error(codes.InvalidArgument, "invalid webhook url")
 		}
 	}
 
-	_, err := s.sp.GetByID(ctx, req.GetId())
-	if err != nil {
+	err := s.sp.Update(ctx, Subscriber{
+		ID:         subID,
+		WebhookURL: req.GetWebhookUrl(),
+	})
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, status.Error(codes.InvalidArgument, "invalid subscriber ID")
 	}
 
-	err = s.sp.Update(ctx, Subscriber{
-		ID:         req.GetId(),
-		WebhookURL: req.GetWebhookURL(),
-	})
 	if err != nil {
-		log.Error().Err(err).Msgf("update subscriber: %s", req.GetId())
+		log.Error().Err(err).Msgf("update subscriber: %s", subID)
 		return nil, status.Error(codes.Internal, "internal error")
 	}
+
+	log.Debug().Msgf("update subscriber: %s", subID)
 
 	return &emptypb.Empty{}, nil
 }

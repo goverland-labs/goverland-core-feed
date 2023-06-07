@@ -79,10 +79,10 @@ func (c *ProposalConsumer) Start(ctx context.Context) error {
 	for _, event := range []string{
 		pevents.SubjectProposalCreated,
 		pevents.SubjectProposalUpdated,
-		pevents.SubjectProposalVotingComing,
+		pevents.SubjectProposalVotingStartsSoon,
 		pevents.SubjectProposalVotingStarted,
 		pevents.SubjectProposalVotingEnded,
-		pevents.SubjectProposalVotingReached,
+		pevents.SubjectProposalVotingQuorumReached,
 		pevents.SubjectProposalUpdatedState,
 	} {
 		cc, err := client.NewConsumer(ctx, c.conn, group, event, c.handler(event))
