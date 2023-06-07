@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.2] - 2023-06-07
+
 ### Added
 - Manipulating with subscriptions
 - Simple auth by subscriber identifier
