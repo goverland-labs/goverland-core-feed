@@ -10,8 +10,9 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 
+	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
+
 	"github.com/goverland-labs/feed/internal/subscriber"
-	proto "github.com/goverland-labs/feed/protobuf/internalapi"
 )
 
 type SubscriptionProvider interface {

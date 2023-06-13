@@ -11,6 +11,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"github.com/goverland-labs/core-api/protobuf/internalapi"
+
 	"github.com/goverland-labs/feed/internal/communicate"
 	"github.com/goverland-labs/feed/internal/config"
 	"github.com/goverland-labs/feed/internal/item"
@@ -19,7 +21,6 @@ import (
 	"github.com/goverland-labs/feed/pkg/grpcsrv"
 	"github.com/goverland-labs/feed/pkg/health"
 	"github.com/goverland-labs/feed/pkg/prometheus"
-	"github.com/goverland-labs/feed/protobuf/internalapi"
 )
 
 type Application struct {

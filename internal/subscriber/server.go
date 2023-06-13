@@ -11,7 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 
-	proto "github.com/goverland-labs/feed/protobuf/internalapi"
+	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
 )
 
 type SubscriberProvider interface {
