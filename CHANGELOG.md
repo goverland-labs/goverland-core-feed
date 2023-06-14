@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Inject core-api library
+
 ## [0.0.2] - 2023-06-07
 
 ### Added

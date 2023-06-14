@@ -24,7 +24,7 @@ func TestUnitAddAndGetItems(t *testing.T) {
 		require.Len(t, items, 2)
 
 		itemsByKey3, ok := c.GetItems("key-3")
-		require.True(t, false)
+		require.True(t, ok)
 		require.Len(t, itemsByKey3, 0)
 	})
 
