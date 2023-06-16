@@ -1,4 +1,4 @@
-module github.com/goverland-labs/feed
+module github.com/goverland-labs/core-feed
 
 go 1.20
 

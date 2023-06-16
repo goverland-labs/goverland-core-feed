@@ -8,7 +8,7 @@ import (
 	"github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
 
-	"github.com/goverland-labs/feed/internal/subscriber"
+	"github.com/goverland-labs/core-feed/internal/subscriber"
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=item . DataProvider,Publisher
