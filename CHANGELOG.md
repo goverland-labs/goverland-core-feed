@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Rename repository from feed to core-feed
+
 ## [0.0.3] - 2023-06-14
 
 ### Added

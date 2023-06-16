@@ -12,7 +12,7 @@ import (
 
 	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
 
-	"github.com/goverland-labs/feed/internal/subscriber"
+	"github.com/goverland-labs/core-feed/internal/subscriber"
 )
 
 type SubscriptionProvider interface {

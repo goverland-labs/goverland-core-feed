@@ -11,8 +11,8 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 
-	"github.com/goverland-labs/feed/internal/config"
-	"github.com/goverland-labs/feed/internal/metrics"
+	"github.com/goverland-labs/core-feed/internal/config"
+	"github.com/goverland-labs/core-feed/internal/metrics"
 )
 
 type DaoConsumer struct {

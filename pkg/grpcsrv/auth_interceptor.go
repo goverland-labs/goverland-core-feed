@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/goverland-labs/feed/internal/subscriber"
+	"github.com/goverland-labs/core-feed/internal/subscriber"
 )
 
 type SubscriberProvider interface {

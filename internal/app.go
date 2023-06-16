@@ -13,14 +13,14 @@ import (
 
 	"github.com/goverland-labs/core-api/protobuf/internalapi"
 
-	"github.com/goverland-labs/feed/internal/communicate"
-	"github.com/goverland-labs/feed/internal/config"
-	"github.com/goverland-labs/feed/internal/item"
-	"github.com/goverland-labs/feed/internal/subscriber"
-	"github.com/goverland-labs/feed/internal/subscription"
-	"github.com/goverland-labs/feed/pkg/grpcsrv"
-	"github.com/goverland-labs/feed/pkg/health"
-	"github.com/goverland-labs/feed/pkg/prometheus"
+	"github.com/goverland-labs/core-feed/internal/communicate"
+	"github.com/goverland-labs/core-feed/internal/config"
+	"github.com/goverland-labs/core-feed/internal/item"
+	"github.com/goverland-labs/core-feed/internal/subscriber"
+	"github.com/goverland-labs/core-feed/internal/subscription"
+	"github.com/goverland-labs/core-feed/pkg/grpcsrv"
+	"github.com/goverland-labs/core-feed/pkg/health"
+	"github.com/goverland-labs/core-feed/pkg/prometheus"
 )
 
 type Application struct {
