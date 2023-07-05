@@ -29,3 +29,8 @@ type FeedItem struct {
 
 	Snapshot json.RawMessage
 }
+
+type FeedList struct {
+	Items      []FeedItem
+	TotalCount int64
+}

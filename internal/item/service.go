@@ -19,6 +19,7 @@ type Publisher interface {
 
 type DataProvider interface {
 	Create(item FeedItem) error
+	GetByFilters(filters []Filter) (FeedList, error)
 }
 
 type SubscriberProvider interface {
@@ -108,4 +109,13 @@ func convertToExternalFeed(item FeedItem) core.FeedItem {
 		Action:       core.ConvertActionToExternal(item.Action),
 		Snapshot:     item.Snapshot,
 	}
+}
+
+func (s *Service) GetByFilters(filters []Filter) (FeedList, error) {
+	list, err := s.repo.GetByFilters(filters)
+	if err != nil {
+		return FeedList{}, fmt.Errorf("get by filters: %w", err)
+	}
+
+	return list, nil
 }

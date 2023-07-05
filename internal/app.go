@@ -31,6 +31,7 @@ type Application struct {
 
 	subscribers   *subscriber.Service
 	subscriptions *subscription.Service
+	itemService   *item.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -143,6 +144,8 @@ func (a *Application) initDataConsumers(nc *nats.Conn, pb *communicate.Publisher
 		return fmt.Errorf("item service: %w", err)
 	}
 
+	a.itemService = service
+
 	dc, err := item.NewDaoConsumer(nc, service)
 	if err != nil {
 		return fmt.Errorf("item dao consumer: %w", err)
@@ -167,12 +170,14 @@ func (a *Application) initAPI() error {
 		[]string{
 			"/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo",
 			"/internalapi.Subscriber/Create",
+			"/internalapi.Feed/GetByFilter",
 		},
 		authInterceptor.AuthAndIdentifyTickerFunc,
 	)
 
 	internalapi.RegisterSubscriberServer(srv, subscriber.NewServer(a.subscribers))
 	internalapi.RegisterSubscriptionServer(srv, subscription.NewServer(a.subscriptions))
+	internalapi.RegisterFeedServer(srv, item.NewServer(a.itemService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 
