@@ -13,11 +13,6 @@ const (
 	TypeProposal = "proposal"
 )
 
-const (
-	actionCreated = "created"
-	actionUpdated = "updated"
-)
-
 type FeedItem struct {
 	gorm.Model
 

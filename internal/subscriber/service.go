@@ -12,8 +12,10 @@ import (
 //go:generate mockgen -destination=mocks_test.go -package=subscriber . DataProvider
 
 const (
-	IDKey = "subscriber_id_key"
+	IDKey ContextKey = "subscriber_id_key"
 )
+
+type ContextKey string
 
 type DataProvider interface {
 	Create(*Subscriber) error

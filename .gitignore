@@ -1,6 +1,4 @@
-.idea/
-.DS_Store
 /.env
 /bin/*
-/skeleton-go
+/core-feed
 /vendor
