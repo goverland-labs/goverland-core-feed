@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed DeletedAt field in subscriber model
+- Fixed Dockerfile
+
 ## [0.0.5] - 2023-07-06
 
 ### Added
