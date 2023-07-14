@@ -4,7 +4,6 @@ import (
 	"context"
 
 	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
-	"github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -78,13 +77,13 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) 
 
 func convertFeedItemToAPI(item *FeedItem) *proto.FeedInfo {
 	return &proto.FeedInfo{
-		Id:           uint64(item.ID),
+		Id:           item.ID.String(),
 		CreatedAt:    timestamppb.New(item.CreatedAt),
 		UpdatedAt:    timestamppb.New(item.UpdatedAt),
 		DaoId:        item.DaoID,
 		ProposalId:   item.ProposalID,
 		DiscussionId: item.DiscussionID,
-		Action:       string(core.ConvertActionToExternal(item.Action)),
+		Action:       string(convertActionToExternal(item.Action)),
 		Type:         convertTypeToAPI(item.Type),
 		Snapshot:     &anypb.Any{Value: item.Snapshot},
 	}

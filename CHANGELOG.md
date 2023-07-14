@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Updated core-api protocol version to v0.0.9
+- Updated structure of the dao feed
+- Updates internal structure and handling feed items
+
 ## [0.0.8] - 2023-07-12
 
 ### Fixed

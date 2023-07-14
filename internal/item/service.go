@@ -3,10 +3,13 @@ package item
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/goverland-labs/platform-events/events/core"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 
 	"github.com/goverland-labs/core-feed/internal/subscriber"
 )
@@ -18,7 +21,9 @@ type Publisher interface {
 }
 
 type DataProvider interface {
-	Create(item FeedItem) error
+	Save(item *FeedItem) error
+	GetDaoItem(id uuid.UUID) (*FeedItem, error)
+	GetProposalItem(id string) (*FeedItem, error)
 	GetByFilters(filters []Filter) (FeedList, error)
 }
 
@@ -46,45 +51,75 @@ func NewService(r DataProvider, p Publisher, sub SubscriberProvider, sp Subscrip
 	}, nil
 }
 
-func (s *Service) HandleItem(ctx context.Context, item FeedItem) error {
-	err := s.repo.Create(item)
-	if err != nil {
-		return fmt.Errorf("can't create item: %w", err)
+func (s *Service) GetDaoItem(_ context.Context, id uuid.UUID) (*FeedItem, error) {
+	item, err := s.repo.GetDaoItem(id)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
 	}
 
-	// todo: refactor and move to separated logic
-	go func() {
-		subs, err := s.subscriptions.GetSubscribers(ctx, item.DaoID)
+	if err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (s *Service) GetProposalItem(_ context.Context, id string) (*FeedItem, error) {
+	item, err := s.repo.GetProposalItem(id)
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return item, nil
+}
+
+func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bool) error {
+	if err := s.repo.Save(item); err != nil {
+		return fmt.Errorf("can't save feed item: %w", err)
+	}
+
+	if !sendUpdates {
+		return nil
+	}
+
+	subs, err := s.subscriptions.GetSubscribers(ctx, item.DaoID)
+	if err != nil {
+		log.Error().Err(err).Msg("get subscribers")
+		return nil
+	}
+
+	feed := convertToExternalFeed(item)
+	data, err := json.Marshal(feed)
+	if err != nil {
+		log.Error().Err(err).Msgf("marshal feed: %d", item.ID)
+
+		// Suppress an error for the consumer for avoiding duplicated events
+		return nil
+	}
+
+	for _, sub := range subs {
+		info, err := s.subscribers.GetByID(ctx, sub)
 		if err != nil {
-			log.Error().Err(err).Msg("get subscribers")
-			return
+			log.Error().Str("subscriber", sub).Err(err).Msgf("get details for subscriber")
+			continue
 		}
 
-		feed := convertToExternalFeed(item)
-		data, err := json.Marshal(feed)
+		payload := core.CallbackPayload{
+			WebhookURL: info.WebhookURL,
+			Body:       data,
+		}
+
+		err = s.events.PublishJSON(ctx, core.SubjectCallback, payload)
 		if err != nil {
-			log.Error().Err(err).Msgf("marshal feed: %d", item.ID)
-			return
+			log.Error().Str("subscriber", sub).Str("webhook_url", info.WebhookURL).Err(err).Msgf("publish callback")
 		}
-
-		for _, sub := range subs {
-			info, err := s.subscribers.GetByID(ctx, sub)
-			if err != nil {
-				log.Error().Err(err).Msgf("get details for: %s", sub)
-				continue
-			}
-
-			payload := core.CallbackPayload{
-				WebhookURL: info.WebhookURL,
-				Body:       data,
-			}
-
-			err = s.events.PublishJSON(ctx, core.SubjectCallback, payload)
-			if err != nil {
-				log.Error().Err(err).Msgf("publish callback for: %s", info.WebhookURL)
-			}
-		}
-	}()
+	}
 
 	return nil
 }
@@ -100,13 +135,15 @@ func convertFeedType(ftype Type) core.Type {
 	}
 }
 
-func convertToExternalFeed(item FeedItem) core.FeedItem {
+func convertToExternalFeed(item *FeedItem) core.FeedItem {
+	// TODO: TBD: Might be we should export feed.id?
+
 	return core.FeedItem{
 		DaoID:        item.DaoID,
 		ProposalID:   item.ProposalID,
 		DiscussionID: item.DiscussionID,
 		Type:         convertFeedType(item.Type),
-		Action:       core.ConvertActionToExternal(item.Action),
+		Action:       convertActionToExternal(item.Action),
 		Snapshot:     item.Snapshot,
 	}
 }
@@ -118,4 +155,23 @@ func (s *Service) GetByFilters(filters []Filter) (FeedList, error) {
 	}
 
 	return list, nil
+}
+
+func convertActionToExternal(action TimelineAction) core.Action {
+	switch action {
+	case DaoCreated, ProposalCreated:
+		return core.ActionCreated
+	case DaoUpdated, ProposalUpdated:
+		return core.ActionUpdated
+	case ProposalVotingStarted:
+		return core.ActionVotingStarted
+	case ProposalVotingStartsSoon:
+		return core.ActionVotingStartsSoon
+	case ProposalVotingQuorumReached:
+		return core.ActionVotingQuorumReached
+	case ProposalVotingEnded:
+		return core.ActionVotingEnded
+	default:
+		return ""
+	}
 }

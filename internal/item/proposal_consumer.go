@@ -15,6 +15,31 @@ import (
 	"github.com/goverland-labs/core-feed/internal/metrics"
 )
 
+// proposalEvents is map event:string => is_unique_event:bool
+type eventConfig struct {
+	isUnique  bool
+	action    TimelineAction
+	extractor func(payload pevents.ProposalPayload) time.Time
+}
+
+var defaultConfig = eventConfig{isUnique: false, action: ProposalUpdated}
+
+var proposalEvents = map[string]eventConfig{
+	pevents.SubjectProposalCreated: {isUnique: true, action: ProposalCreated, extractor: func(payload pevents.ProposalPayload) time.Time {
+		return time.Unix(int64(payload.Created), 0).UTC()
+	}},
+	pevents.SubjectProposalVotingStartsSoon: {isUnique: true, action: ProposalVotingStartsSoon},
+	pevents.SubjectProposalVotingStarted: {isUnique: true, action: ProposalVotingStarted, extractor: func(payload pevents.ProposalPayload) time.Time {
+		return time.Unix(int64(payload.Start), 0).UTC()
+	}},
+	pevents.SubjectProposalVotingQuorumReached: {isUnique: true, action: ProposalVotingQuorumReached},
+	pevents.SubjectProposalVotingEnded: {isUnique: true, action: ProposalVotingEnded, extractor: func(payload pevents.ProposalPayload) time.Time {
+		return time.Unix(int64(payload.End), 0).UTC()
+	}},
+	pevents.SubjectProposalUpdated:      defaultConfig,
+	pevents.SubjectProposalUpdatedState: defaultConfig,
+}
+
 type ProposalConsumer struct {
 	conn      *nats.Conn
 	service   *Service
@@ -40,13 +65,45 @@ func (c *ProposalConsumer) handler(action string) pevents.ProposalHandler {
 				Observe(time.Since(start).Seconds())
 		}(time.Now())
 
-		item, err := c.convertToFeedItem(payload, action)
+		item, err := c.service.GetProposalItem(context.TODO(), payload.ID)
 		if err != nil {
-			log.Error().Err(err).Msg("converting feed item")
 			return err
 		}
 
-		err = c.service.HandleItem(context.TODO(), item)
+		var timeline Timeline
+		if item != nil {
+			timeline = item.Timeline
+		}
+
+		cfg, exist := proposalEvents[action]
+		if !exist {
+			cfg = defaultConfig
+		}
+
+		eventTime := time.Now().UTC()
+		if cfg.extractor != nil {
+			eventTime = cfg.extractor(payload)
+		}
+
+		var sendUpdates = false
+		if cfg.isUnique {
+			sendUpdates = timeline.AddUniqueAction(eventTime, cfg.action)
+		} else {
+			timeline.AddNonUniqueAction(eventTime, cfg.action)
+		}
+
+		timeline = c.prefillTimelineInNeeded(payload, timeline)
+
+		if item == nil {
+			item, err = c.convertToFeedItem(payload, timeline)
+			if err != nil {
+				return err
+			}
+		} else {
+			item.Timeline = timeline
+		}
+
+		err = c.service.HandleItem(context.TODO(), item, sendUpdates)
 		if err != nil {
 			log.Error().Err(err).Msg("process dao")
 			return err
@@ -58,33 +115,26 @@ func (c *ProposalConsumer) handler(action string) pevents.ProposalHandler {
 	}
 }
 
-func (c *ProposalConsumer) convertToFeedItem(pl pevents.ProposalPayload, action string) (FeedItem, error) {
+func (c *ProposalConsumer) convertToFeedItem(pl pevents.ProposalPayload, timeline Timeline) (*FeedItem, error) {
 	b, err := json.Marshal(pl)
 	if err != nil {
-		return FeedItem{}, fmt.Errorf("cant marshal payload: %w", err)
+		return nil, fmt.Errorf("cant marshal payload: %w", err)
 	}
 
-	return FeedItem{
+	return &FeedItem{
 		DaoID:      pl.DaoID,
 		ProposalID: pl.ID,
 		Type:       TypeProposal,
-		Action:     action,
+		Action:     timeline.LastAction(),
 		Snapshot:   b,
+		Timeline:   timeline,
 	}, nil
 }
 
 func (c *ProposalConsumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName("item_proposal")
 
-	for _, event := range []string{
-		pevents.SubjectProposalCreated,
-		pevents.SubjectProposalUpdated,
-		pevents.SubjectProposalVotingStartsSoon,
-		pevents.SubjectProposalVotingStarted,
-		pevents.SubjectProposalVotingEnded,
-		pevents.SubjectProposalVotingQuorumReached,
-		pevents.SubjectProposalUpdatedState,
-	} {
+	for event := range proposalEvents {
 		cc, err := client.NewConsumer(ctx, c.conn, group, event, c.handler(event))
 		if err != nil {
 			return fmt.Errorf("consume for %s/%s: %w", group, event, err)
@@ -107,4 +157,36 @@ func (c *ProposalConsumer) stop() error {
 	}
 
 	return nil
+}
+
+func (c *ProposalConsumer) prefillTimelineInNeeded(payload pevents.ProposalPayload, timeline Timeline) Timeline {
+	prepend := make([]TimelineItem, 0, 3)
+
+	if !timeline.ContainsAction(ProposalCreated) {
+		prepend = append(prepend, TimelineItem{
+			CreatedAt: time.Unix(int64(payload.Created), 0).UTC(),
+			Action:    ProposalCreated,
+		})
+	}
+
+	votingStartsAt := time.Unix(int64(payload.Start), 0).UTC()
+	if votingStartsAt.Before(time.Now()) && !timeline.ContainsAction(ProposalVotingStarted) {
+		prepend = append(prepend, TimelineItem{
+			CreatedAt: votingStartsAt,
+			Action:    ProposalVotingStarted,
+		})
+	}
+
+	votingEndsAt := time.Unix(int64(payload.End), 0).UTC()
+	if votingEndsAt.Before(time.Now()) && !timeline.ContainsAction(ProposalVotingEnded) {
+		prepend = append(prepend, TimelineItem{
+			CreatedAt: votingEndsAt,
+			Action:    ProposalVotingEnded,
+		})
+	}
+
+	timeline = append(prepend, timeline...)
+	timeline.Sort()
+
+	return timeline
 }

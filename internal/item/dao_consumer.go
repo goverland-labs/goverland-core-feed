@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	pevents "github.com/goverland-labs/platform-events/events/core"
 	client "github.com/goverland-labs/platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
@@ -40,15 +41,45 @@ func (c *DaoConsumer) handler(action string) pevents.DaoHandler {
 				Observe(time.Since(start).Seconds())
 		}(time.Now())
 
-		item, err := c.convertToFeedItem(payload, action)
+		id, err := uuid.Parse(payload.ID)
 		if err != nil {
-			log.Error().Err(err).Msg("converting feed item")
+			log.Error().Str("dao_id", payload.ID).Err(err).Msg("unable to parse DAO id")
 			return err
 		}
 
-		err = c.service.HandleItem(context.TODO(), item)
+		item, err := c.service.GetDaoItem(context.TODO(), id)
 		if err != nil {
-			log.Error().Err(err).Msg("process dao")
+			return err
+		}
+
+		var timeline Timeline
+		if item != nil {
+			timeline = item.Timeline
+		}
+
+		var sendUpdates = true
+		now := time.Now().UTC()
+		switch action {
+		case pevents.SubjectDaoCreated:
+			sendUpdates = timeline.AddUniqueAction(now, DaoCreated)
+		case pevents.SubjectDaoUpdated:
+			timeline.AddNonUniqueAction(now, DaoUpdated)
+		}
+
+		timeline = c.prefillTimelineInNeeded(payload, timeline)
+
+		if item == nil {
+			item, err = c.convertToFeedItem(payload, timeline)
+			if err != nil {
+				return err
+			}
+		} else {
+			item.Timeline = timeline
+		}
+
+		err = c.service.HandleItem(context.TODO(), item, sendUpdates)
+		if err != nil {
+			log.Error().Str("dao_id", payload.ID).Err(err).Msg("process dao")
 			return err
 		}
 
@@ -58,32 +89,32 @@ func (c *DaoConsumer) handler(action string) pevents.DaoHandler {
 	}
 }
 
-func (c *DaoConsumer) convertToFeedItem(pl pevents.DaoPayload, action string) (FeedItem, error) {
+func (c *DaoConsumer) convertToFeedItem(pl pevents.DaoPayload, timeline Timeline) (*FeedItem, error) {
 	b, err := json.Marshal(pl)
 	if err != nil {
-		return FeedItem{}, fmt.Errorf("cant marshal payload: %w", err)
+		return nil, fmt.Errorf("cant marshal payload: %w", err)
 	}
 
-	return FeedItem{
+	return &FeedItem{
 		DaoID:    pl.ID,
 		Type:     TypeDao,
-		Action:   action,
+		Action:   timeline.LastAction(),
 		Snapshot: b,
+		Timeline: timeline,
 	}, nil
 }
 
 func (c *DaoConsumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName("item_dao")
-	cc, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoCreated, c.handler(pevents.SubjectDaoCreated))
-	if err != nil {
-		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectDaoCreated, err)
-	}
-	cu, err := client.NewConsumer(ctx, c.conn, group, pevents.SubjectDaoUpdated, c.handler(pevents.SubjectDaoUpdated))
-	if err != nil {
-		return fmt.Errorf("consume for %s/%s: %w", group, pevents.SubjectDaoUpdated, err)
-	}
 
-	c.consumers = append(c.consumers, cc, cu)
+	for _, subj := range []string{pevents.SubjectDaoCreated, pevents.SubjectDaoUpdated} {
+		consumer, err := client.NewConsumer(ctx, c.conn, group, subj, c.handler(subj))
+		if err != nil {
+			return fmt.Errorf("consume for %s/%s: %w", group, subj, err)
+		}
+
+		c.consumers = append(c.consumers, consumer)
+	}
 
 	log.Info().Msg("feed item DAO consumers is started")
 
@@ -100,4 +131,20 @@ func (c *DaoConsumer) stop() error {
 	}
 
 	return nil
+}
+
+func (c *DaoConsumer) prefillTimelineInNeeded(payload pevents.DaoPayload, timeline Timeline) Timeline {
+	prepend := make([]TimelineItem, 0, 3)
+
+	if !timeline.ContainsAction(DaoCreated) {
+		prepend = append(prepend, TimelineItem{
+			CreatedAt: time.Now(),
+			Action:    DaoCreated,
+		})
+	}
+
+	timeline = append(prepend, timeline...)
+	timeline.Sort()
+
+	return timeline
 }

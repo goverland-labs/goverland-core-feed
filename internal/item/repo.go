@@ -1,24 +1,58 @@
 package item
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
+var emptyID uuid.UUID
+
 type Repo struct {
-	db *gorm.DB
+	conn *gorm.DB
 }
 
-func NewRepo(db *gorm.DB) *Repo {
-	return &Repo{db: db}
+func NewRepo(conn *gorm.DB) *Repo {
+	return &Repo{conn: conn}
 }
 
-// Create creates one feed item object
-func (r *Repo) Create(item FeedItem) error {
-	return r.db.Create(&item).Error
+func (r *Repo) Save(item *FeedItem) error {
+	if item.ID == emptyID {
+		item.ID = uuid.New()
+	}
+
+	return r.conn.Save(item).Error
+}
+
+func (r *Repo) GetDaoItem(id uuid.UUID) (*FeedItem, error) {
+	var (
+		item FeedItem
+		_    = item.DaoID
+	)
+
+	err := r.conn.Where("dao_id = ?", id).First(&item).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
+}
+
+func (r *Repo) GetProposalItem(id string) (*FeedItem, error) {
+	var (
+		item FeedItem
+		_    = item.ProposalID
+	)
+
+	err := r.conn.Where("proposal_id = ?", id).First(&item).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, nil
 }
 
 func (r *Repo) GetByFilters(filters []Filter) (FeedList, error) {
-	db := r.db.Model(&FeedItem{})
+	db := r.conn.Model(&FeedItem{})
 	for _, f := range filters {
 		if _, ok := f.(PageFilter); ok {
 			continue
