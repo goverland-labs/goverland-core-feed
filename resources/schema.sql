@@ -30,7 +30,7 @@ create table subscriptions
     created_at    timestamp with time zone,
     updated_at    timestamp with time zone,
     deleted_at    timestamp with time zone,
-    subscriber_id text,
+    subscriber_id uuid,
     dao_id        uuid
 );
 

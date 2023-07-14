@@ -14,6 +14,8 @@ func NewRepo(db *gorm.DB) *Repo {
 }
 
 func (r *Repo) Create(item Subscription) error {
+	item.ID = uuid.New()
+
 	return r.db.Create(&item).Error
 }
 
