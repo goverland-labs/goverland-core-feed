@@ -145,6 +145,8 @@ github.com/goverland-labs/core-api v0.0.9 h1:uTUHV4MxrMN5a1xHiIfmphUGf9GMp7Xtk3+
 github.com/goverland-labs/core-api v0.0.9/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
 github.com/goverland-labs/core-api v0.0.10 h1:IEN2QSsmWwhqj9QZYOadt1DtQQhh/nMDJI/xfEuU3bA=
 github.com/goverland-labs/core-api v0.0.10/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
+github.com/goverland-labs/core-api v0.0.11 h1:PliJyvaQTM5I8uudCu4wU5KSP5gPhtqZvpUvbP7BpSc=
+github.com/goverland-labs/core-api v0.0.11/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
 github.com/goverland-labs/platform-events v0.0.13 h1:7WDyYYumj7F00nkVzars5dSLgskJu4D28aPRc6jIrCM=
 github.com/goverland-labs/platform-events v0.0.13/go.mod h1:ZJnl4Bd/QUeGnpMw0WBPBxBpxt9wOP9Yc6ZpTVz640A=
 github.com/goverland-labs/platform-events v0.0.14 h1:N6A5pNHDEjzG8L/1qXpLzvHHLmrCRzmaZboUaJrvLEY=
