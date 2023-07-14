@@ -25,11 +25,11 @@ var timelineActionsMap = map[TimelineAction]proto.FeedTimelineItem_TimelineActio
 	DaoCreated:                  proto.FeedTimelineItem_DaoCreated,
 	DaoUpdated:                  proto.FeedTimelineItem_DaoUpdated,
 	ProposalCreated:             proto.FeedTimelineItem_ProposalCreated,
-	ProposalUpdated:             proto.FeedTimelineItem_ProposalCreated,
-	ProposalVotingStartsSoon:    proto.FeedTimelineItem_ProposalCreated,
-	ProposalVotingStarted:       proto.FeedTimelineItem_ProposalCreated,
-	ProposalVotingQuorumReached: proto.FeedTimelineItem_ProposalCreated,
-	ProposalVotingEnded:         proto.FeedTimelineItem_ProposalCreated,
+	ProposalUpdated:             proto.FeedTimelineItem_ProposalUpdated,
+	ProposalVotingStartsSoon:    proto.FeedTimelineItem_ProposalVotingStartsSoon,
+	ProposalVotingStarted:       proto.FeedTimelineItem_ProposalVotingStarted,
+	ProposalVotingQuorumReached: proto.FeedTimelineItem_ProposalVotingQuorumReached,
+	ProposalVotingEnded:         proto.FeedTimelineItem_ProposalVotingEnded,
 }
 
 type Server struct {
