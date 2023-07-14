@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Fixed uuid fields
+
 ## [0.0.10] - 2023-07-14
 
 ### Fixed

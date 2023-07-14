@@ -1,27 +1,31 @@
 package subscriber
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/google/uuid"
+)
 
 type Cache struct {
 	mu sync.RWMutex
 
-	data map[string]*Subscriber
+	data map[uuid.UUID]*Subscriber
 }
 
 func NewCache() *Cache {
 	return &Cache{
-		data: make(map[string]*Subscriber),
+		data: make(map[uuid.UUID]*Subscriber),
 	}
 }
 
-func (c *Cache) UpsertItem(key string, value *Subscriber) {
+func (c *Cache) UpsertItem(key uuid.UUID, value *Subscriber) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	c.data[key] = value
 }
 
-func (c *Cache) GetItem(key string) (*Subscriber, bool) {
+func (c *Cache) GetItem(key uuid.UUID) (*Subscriber, bool) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
@@ -29,7 +33,7 @@ func (c *Cache) GetItem(key string) (*Subscriber, bool) {
 	return data, ok
 }
 
-func (c *Cache) RemoveItem(key string) {
+func (c *Cache) RemoveItem(key uuid.UUID) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 

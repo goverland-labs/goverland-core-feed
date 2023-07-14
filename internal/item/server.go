@@ -96,7 +96,7 @@ func convertFeedItemToAPI(item *FeedItem) *proto.FeedInfo {
 		Id:           item.ID.String(),
 		CreatedAt:    timestamppb.New(item.CreatedAt),
 		UpdatedAt:    timestamppb.New(item.UpdatedAt),
-		DaoId:        item.DaoID,
+		DaoId:        item.DaoID.String(),
 		ProposalId:   item.ProposalID,
 		DiscussionId: item.DiscussionID,
 		Action:       string(convertActionToExternal(item.Action)),

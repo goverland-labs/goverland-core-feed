@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -13,15 +14,15 @@ import (
 type DataProvider interface {
 	Create(Subscription) error
 	Delete(Subscription) error
-	GetByID(string, string) (Subscription, error)
-	GetSubscribers(daoID string) ([]Subscription, error)
+	GetByID(uuid.UUID, uuid.UUID) (Subscription, error)
+	GetSubscribers(daoID uuid.UUID) ([]Subscription, error)
 }
 
 type Cacher interface {
-	AddItems(string, ...string)
-	RemoveItem(string, string)
-	UpdateItems(string, ...string)
-	GetItems(string) ([]string, bool)
+	AddItems(string, ...uuid.UUID)
+	RemoveItem(string, uuid.UUID)
+	UpdateItems(string, ...uuid.UUID)
+	GetItems(string) ([]uuid.UUID, bool)
 }
 
 type Service struct {
@@ -51,7 +52,7 @@ func (s *Service) Subscribe(_ context.Context, item Subscription) (*Subscription
 		return nil, fmt.Errorf("create subscription: %w", err)
 	}
 
-	go s.cache.AddItems(item.DaoID, item.SubscriberID)
+	go s.cache.AddItems(item.DaoID.String(), item.SubscriberID)
 
 	return &item, err
 }
@@ -67,13 +68,13 @@ func (s *Service) Unsubscribe(_ context.Context, item Subscription) error {
 		return fmt.Errorf("delete scubscription[%s - %s]: %w", item.SubscriberID, item.DaoID, err)
 	}
 
-	go s.cache.RemoveItem(item.DaoID, item.SubscriberID)
+	go s.cache.RemoveItem(item.DaoID.String(), item.SubscriberID)
 
 	return nil
 }
 
-func (s *Service) GetSubscribers(_ context.Context, daoID string) ([]string, error) {
-	if list, ok := s.cache.GetItems(daoID); ok {
+func (s *Service) GetSubscribers(_ context.Context, daoID uuid.UUID) ([]uuid.UUID, error) {
+	if list, ok := s.cache.GetItems(daoID.String()); ok {
 		return list, nil
 	}
 
@@ -82,12 +83,12 @@ func (s *Service) GetSubscribers(_ context.Context, daoID string) ([]string, err
 		return nil, fmt.Errorf("get subscribers: %w", err)
 	}
 
-	response := make([]string, len(data))
+	response := make([]uuid.UUID, len(data))
 	for i, sub := range data {
 		response[i] = sub.SubscriberID
 	}
 
-	go s.cache.UpdateItems(daoID, response...)
+	go s.cache.UpdateItems(daoID.String(), response...)
 
 	return response, nil
 }

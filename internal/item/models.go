@@ -33,7 +33,7 @@ type FeedItem struct {
 	UpdatedAt time.Time
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 
-	DaoID        string
+	DaoID        uuid.UUID
 	ProposalID   string
 	DiscussionID string
 	Type         Type

@@ -2,7 +2,9 @@ package grpcsrv
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/grpc-ecosystem/go-grpc-middleware/util/metautils"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -11,7 +13,7 @@ import (
 )
 
 type SubscriberProvider interface {
-	GetByID(_ context.Context, id string) (*subscriber.Subscriber, error)
+	GetByID(_ context.Context, id uuid.UUID) (*subscriber.Subscriber, error)
 }
 
 const (
@@ -19,7 +21,7 @@ const (
 )
 
 var (
-	errWrongSubsciberID = status.Errorf(codes.Unauthenticated, "wrong subscriber identifier")
+	errWrongSubscriberID = status.Errorf(codes.Unauthenticated, "wrong subscriber identifier")
 )
 
 type Auth struct {
@@ -37,13 +39,18 @@ func (a *Auth) AuthAndIdentifyTickerFunc(ctx context.Context) (context.Context, 
 	requestSubID := md.Get(subscriberIDKey)
 
 	if requestSubID == "" {
-		return nil, errWrongSubsciberID
+		return nil, errWrongSubscriberID
 	}
 
-	if _, err := a.subs.GetByID(ctx, requestSubID); err != nil {
-		return nil, errWrongSubsciberID
+	parsed, err := uuid.Parse(requestSubID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", errWrongSubscriberID, err.Error())
 	}
 
-	newCtx := context.WithValue(ctx, subscriber.IDKey, requestSubID)
+	if _, err := a.subs.GetByID(ctx, parsed); err != nil {
+		return nil, errWrongSubscriberID
+	}
+
+	newCtx := context.WithValue(ctx, subscriber.IDKey, parsed)
 	return newCtx, nil
 }

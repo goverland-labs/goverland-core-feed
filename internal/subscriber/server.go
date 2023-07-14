@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/url"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -15,7 +16,7 @@ import (
 )
 
 type SubscriberProvider interface {
-	GetByID(_ context.Context, id string) (*Subscriber, error)
+	GetByID(_ context.Context, id uuid.UUID) (*Subscriber, error)
 	Create(_ context.Context, webhookURL string) (*Subscriber, error)
 	Update(_ context.Context, item Subscriber) error
 }
@@ -48,7 +49,7 @@ func (s *Server) Create(ctx context.Context, req *proto.CreateSubscriberRequest)
 
 	log.Debug().Msgf("create subscriber: %s", sub.ID)
 
-	return &proto.CreateSubscriberResponse{SubscriberId: sub.ID}, nil
+	return &proto.CreateSubscriberResponse{SubscriberId: sub.ID.String()}, nil
 }
 
 func (s *Server) Update(ctx context.Context, req *proto.UpdateSubscriberRequest) (*emptypb.Empty, error) {

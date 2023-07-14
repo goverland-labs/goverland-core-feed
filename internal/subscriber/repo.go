@@ -3,6 +3,7 @@ package subscriber
 import (
 	"fmt"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -22,7 +23,7 @@ func (r *Repo) Update(item *Subscriber) error {
 	return r.db.Save(item).Error
 }
 
-func (r *Repo) GetByID(id string) (*Subscriber, error) {
+func (r *Repo) GetByID(id uuid.UUID) (*Subscriber, error) {
 	t := Subscriber{ID: id}
 	request := r.db.Take(&t)
 	if err := request.Error; err != nil {

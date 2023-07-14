@@ -1,6 +1,7 @@
 package subscription
 
 import (
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +21,7 @@ func (r *Repo) Delete(item Subscription) error {
 	return r.db.Delete(&item).Error
 }
 
-func (r *Repo) GetByID(subscriberID, daoID string) (Subscription, error) {
+func (r *Repo) GetByID(subscriberID, daoID uuid.UUID) (Subscription, error) {
 	var res Subscription
 	err := r.db.
 		Where(&Subscription{
@@ -34,7 +35,8 @@ func (r *Repo) GetByID(subscriberID, daoID string) (Subscription, error) {
 }
 
 // todo: think about getting this elements by chunks
-func (r *Repo) GetSubscribers(daoID string) ([]Subscription, error) {
+
+func (r *Repo) GetSubscribers(daoID uuid.UUID) ([]Subscription, error) {
 	var res []Subscription
 	err := r.db.
 		Where(&Subscription{

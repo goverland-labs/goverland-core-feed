@@ -28,11 +28,11 @@ type DataProvider interface {
 }
 
 type SubscriberProvider interface {
-	GetByID(_ context.Context, id string) (*subscriber.Subscriber, error)
+	GetByID(_ context.Context, id uuid.UUID) (*subscriber.Subscriber, error)
 }
 
 type SubscriptionProvider interface {
-	GetSubscribers(_ context.Context, daoID string) ([]string, error)
+	GetSubscribers(_ context.Context, daoID uuid.UUID) ([]uuid.UUID, error)
 }
 
 type Service struct {
@@ -106,7 +106,7 @@ func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bo
 	for _, sub := range subs {
 		info, err := s.subscribers.GetByID(ctx, sub)
 		if err != nil {
-			log.Error().Str("subscriber", sub).Err(err).Msgf("get details for subscriber")
+			log.Error().Str("subscriber", sub.String()).Err(err).Msgf("get details for subscriber")
 			continue
 		}
 
@@ -117,7 +117,7 @@ func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bo
 
 		err = s.events.PublishJSON(ctx, core.SubjectCallback, payload)
 		if err != nil {
-			log.Error().Str("subscriber", sub).Str("webhook_url", info.WebhookURL).Err(err).Msgf("publish callback")
+			log.Error().Str("subscriber", sub.String()).Str("webhook_url", info.WebhookURL).Err(err).Msgf("publish callback")
 		}
 	}
 

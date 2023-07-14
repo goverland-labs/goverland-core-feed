@@ -20,12 +20,12 @@ type ContextKey string
 type DataProvider interface {
 	Create(*Subscriber) error
 	Update(*Subscriber) error
-	GetByID(string) (*Subscriber, error)
+	GetByID(uuid.UUID) (*Subscriber, error)
 }
 
 type Cacher interface {
-	UpsertItem(key string, value *Subscriber)
-	GetItem(key string) (*Subscriber, bool)
+	UpsertItem(key uuid.UUID, value *Subscriber)
+	GetItem(key uuid.UUID) (*Subscriber, bool)
 }
 
 type Service struct {
@@ -60,15 +60,15 @@ func (s *Service) Create(ctx context.Context, webhookURL string) (*Subscriber, e
 	return item, err
 }
 
-func (s *Service) generateSubscriberID(ctx context.Context) (string, error) {
-	subID := uuid.New().String()
+func (s *Service) generateSubscriberID(ctx context.Context) (uuid.UUID, error) {
+	subID := uuid.New()
 	_, err := s.GetByID(ctx, subID)
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return subID, nil
 	}
 
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return "", fmt.Errorf("get subscriber: %w", err)
+		return uuid.UUID{}, fmt.Errorf("get subscriber: %w", err)
 	}
 
 	return s.generateSubscriberID(ctx)
@@ -91,7 +91,7 @@ func (s *Service) Update(ctx context.Context, item Subscriber) error {
 	return nil
 }
 
-func (s *Service) GetByID(_ context.Context, id string) (*Subscriber, error) {
+func (s *Service) GetByID(_ context.Context, id uuid.UUID) (*Subscriber, error) {
 	if el, ok := s.cache.GetItem(id); ok {
 		return el, nil
 	}
@@ -106,6 +106,6 @@ func (s *Service) GetByID(_ context.Context, id string) (*Subscriber, error) {
 	return sub, nil
 }
 
-func GetSubscriberID(ctx context.Context) string {
-	return ctx.Value(IDKey).(string)
+func GetSubscriberID(ctx context.Context) uuid.UUID {
+	return ctx.Value(IDKey).(uuid.UUID)
 }

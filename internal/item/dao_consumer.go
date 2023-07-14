@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	pevents "github.com/goverland-labs/platform-events/events/core"
 	client "github.com/goverland-labs/platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
@@ -41,13 +40,7 @@ func (c *DaoConsumer) handler(action string) pevents.DaoHandler {
 				Observe(time.Since(start).Seconds())
 		}(time.Now())
 
-		id, err := uuid.Parse(payload.ID)
-		if err != nil {
-			log.Error().Str("dao_id", payload.ID).Err(err).Msg("unable to parse DAO id")
-			return err
-		}
-
-		item, err := c.service.GetDaoItem(context.TODO(), id)
+		item, err := c.service.GetDaoItem(context.TODO(), payload.ID)
 		if err != nil {
 			return err
 		}
@@ -79,7 +72,7 @@ func (c *DaoConsumer) handler(action string) pevents.DaoHandler {
 
 		err = c.service.HandleItem(context.TODO(), item, sendUpdates)
 		if err != nil {
-			log.Error().Str("dao_id", payload.ID).Err(err).Msg("process dao")
+			log.Error().Str("dao_id", payload.ID.String()).Err(err).Msg("process dao")
 			return err
 		}
 
