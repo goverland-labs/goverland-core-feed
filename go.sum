@@ -143,6 +143,8 @@ github.com/gorilla/mux v1.8.0 h1:i40aqfkR1h2SlN9hojwV5ZA91wcXFOvkdNIeFDP5koI=
 github.com/gorilla/mux v1.8.0/go.mod h1:DVbg23sWSpFRCP0SfiEN6jmj59UnW/n46BH5rLB71So=
 github.com/goverland-labs/core-api v0.0.9 h1:uTUHV4MxrMN5a1xHiIfmphUGf9GMp7Xtk3+frs3Xv54=
 github.com/goverland-labs/core-api v0.0.9/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
+github.com/goverland-labs/core-api v0.0.10 h1:IEN2QSsmWwhqj9QZYOadt1DtQQhh/nMDJI/xfEuU3bA=
+github.com/goverland-labs/core-api v0.0.10/go.mod h1:D0yjxJ7xlZB6inaYMAv9wGQ36sblFHjm78HqCzLHP/E=
 github.com/goverland-labs/platform-events v0.0.13 h1:7WDyYYumj7F00nkVzars5dSLgskJu4D28aPRc6jIrCM=
 github.com/goverland-labs/platform-events v0.0.13/go.mod h1:ZJnl4Bd/QUeGnpMw0WBPBxBpxt9wOP9Yc6ZpTVz640A=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 h1:UH//fgunKIs4JdUbpDl1VZCDaL56wXCB/5+wF6uHfaI=
@@ -254,6 +256,7 @@ github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d h1:zE9ykE
 github.com/smartystreets/goconvey v1.6.4 h1:fv0U8FUIMPNf1L9lnHLvLhgicrIVChEkdzIKYqbNC9s=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=

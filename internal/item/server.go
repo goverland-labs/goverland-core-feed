@@ -16,6 +16,22 @@ const (
 	defaultOffset = 0
 )
 
+var feedItemTypeMap = map[Type]proto.FeedInfo_Type{
+	TypeDao:      proto.FeedInfo_DAO,
+	TypeProposal: proto.FeedInfo_Proposal,
+}
+
+var timelineActionsMap = map[TimelineAction]proto.FeedTimelineItem_TimelineAction{
+	DaoCreated:                  proto.FeedTimelineItem_DaoCreated,
+	DaoUpdated:                  proto.FeedTimelineItem_DaoUpdated,
+	ProposalCreated:             proto.FeedTimelineItem_ProposalCreated,
+	ProposalUpdated:             proto.FeedTimelineItem_ProposalCreated,
+	ProposalVotingStartsSoon:    proto.FeedTimelineItem_ProposalCreated,
+	ProposalVotingStarted:       proto.FeedTimelineItem_ProposalCreated,
+	ProposalVotingQuorumReached: proto.FeedTimelineItem_ProposalCreated,
+	ProposalVotingEnded:         proto.FeedTimelineItem_ProposalCreated,
+}
+
 type Server struct {
 	proto.UnimplementedFeedServer
 
@@ -86,16 +102,40 @@ func convertFeedItemToAPI(item *FeedItem) *proto.FeedInfo {
 		Action:       string(convertActionToExternal(item.Action)),
 		Type:         convertTypeToAPI(item.Type),
 		Snapshot:     &anypb.Any{Value: item.Snapshot},
+		Timeline:     convertTimelineToProto(item.Timeline),
 	}
 }
 
-func convertTypeToAPI(t Type) proto.FeedInfo_Type {
-	switch t {
-	case TypeDao:
-		return proto.FeedInfo_TYPE_DAO
-	case TypeProposal:
-		return proto.FeedInfo_TYPE_PROPOSAL
-	default:
-		return proto.FeedInfo_TYPE_UNSPECIFIED
+func convertTimelineToProto(timeline Timeline) []*proto.FeedTimelineItem {
+	converted := make([]*proto.FeedTimelineItem, 0, len(timeline))
+	for i := range timeline {
+		converted = append(converted, &proto.FeedTimelineItem{
+			CreatedAt: timestamppb.New(timeline[i].CreatedAt),
+			Action:    convertTimelineActionToProto(timeline[i].Action),
+		})
 	}
+
+	return converted
+}
+
+func convertTypeToAPI(t Type) proto.FeedInfo_Type {
+	converted, exists := feedItemTypeMap[t]
+	if !exists {
+		log.Warn().Str("action", string(t)).Msg("unknown feed item type")
+
+		return proto.FeedInfo_Unspecified
+	}
+
+	return converted
+}
+
+func convertTimelineActionToProto(action TimelineAction) proto.FeedTimelineItem_TimelineAction {
+	converted, exists := timelineActionsMap[action]
+	if !exists {
+		log.Warn().Str("action", string(action)).Msg("unknown timeline action")
+
+		return proto.FeedTimelineItem_Unspecified
+	}
+
+	return converted
 }

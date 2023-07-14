@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Added exporting feed item timeline in gRPC server
+
 ### Changed
 - Updated core-api protocol version to v0.0.9
 - Updated structure of the dao feed
