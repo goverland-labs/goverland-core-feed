@@ -149,7 +149,6 @@ func (c *DaoConsumer) prefillTimelineInNeeded(_ pevents.DaoPayload, timeline Tim
 	}
 
 	timeline = append(prepend, timeline...)
-	timeline.Sort()
 
 	return timeline
 }

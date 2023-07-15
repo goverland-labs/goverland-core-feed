@@ -28,10 +28,11 @@ const (
 )
 
 type FeedItem struct {
-	ID        uuid.UUID `gorm:"primarykey"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID          uuid.UUID `gorm:"primarykey"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	DeletedAt   gorm.DeletedAt `gorm:"index"`
+	TriggeredAt time.Time      `gorm:"index"`
 
 	DaoID        uuid.UUID
 	ProposalID   string

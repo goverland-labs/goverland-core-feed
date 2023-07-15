@@ -198,7 +198,6 @@ func (c *ProposalConsumer) prefillTimelineInNeeded(payload pevents.ProposalPaylo
 	}
 
 	timeline = append(prepend, timeline...)
-	timeline.Sort()
 
 	return timeline
 }

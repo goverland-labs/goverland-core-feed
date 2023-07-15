@@ -47,3 +47,10 @@ type OrderByCreatedFilter struct {
 func (f OrderByCreatedFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Order("created_at desc")
 }
+
+type OrderByTriggeredFilter struct {
+}
+
+func (f OrderByTriggeredFilter) Apply(db *gorm.DB) *gorm.DB {
+	return db.Order("triggered_at desc")
+}

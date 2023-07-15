@@ -54,7 +54,7 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) 
 	}
 	filters := []Filter{
 		PageFilter{Limit: limit, Offset: offset},
-		OrderByCreatedFilter{},
+		OrderByTriggeredFilter{},
 	}
 
 	if req.GetDaoId() != "" {

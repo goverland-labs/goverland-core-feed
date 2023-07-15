@@ -15,6 +15,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 - Added consumers limits (max ack pendings, rate limit, ack wait)
+- Added feed.triggered_at
 
 ## [0.0.14] - 2023-07-14
 

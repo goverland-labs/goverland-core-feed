@@ -81,6 +81,12 @@ func (s *Service) GetProposalItem(_ context.Context, id string) (*FeedItem, erro
 }
 
 func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bool) error {
+	item.Timeline.Sort()
+
+	if len(item.Timeline) > 0 {
+		item.TriggeredAt = item.Timeline[len(item.Timeline)-1].CreatedAt
+	}
+
 	if err := s.repo.Save(item); err != nil {
 		return fmt.Errorf("can't save feed item: %w", err)
 	}

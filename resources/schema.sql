@@ -17,6 +17,9 @@ create index idx_feed_items_dao_proposal_discussion_ids_action on feed_items (da
 create index feed_items_dao_id_index on feed_items (dao_id)
 create index feed_items_proposal_id_index on feed_items (proposal_id)
 
+alter table feed_items add triggered_at timestamptz default created_at not null;
+create index feed_items_triggered_at_index on feed_items (triggered_at);
+
 create table subscribers
 (
     id          uuid not null primary key,
