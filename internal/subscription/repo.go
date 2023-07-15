@@ -25,6 +25,7 @@ func (r *Repo) Delete(item Subscription) error {
 
 func (r *Repo) GetByID(subscriberID, daoID uuid.UUID) (Subscription, error) {
 	var res Subscription
+
 	err := r.db.
 		Where(&Subscription{
 			SubscriberID: subscriberID,

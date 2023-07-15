@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/goverland-labs/platform-events/events/core"
+	"github.com/goverland-labs/platform-events/events/inbox"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
@@ -94,8 +95,7 @@ func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bo
 		return nil
 	}
 
-	feed := convertToExternalFeed(item)
-	data, err := json.Marshal(feed)
+	data, err := json.Marshal(convertToExternalFeed(item))
 	if err != nil {
 		log.Error().Err(err).Msgf("marshal feed: %d", item.ID)
 
@@ -110,12 +110,10 @@ func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bo
 			continue
 		}
 
-		payload := core.CallbackPayload{
+		err = s.events.PublishJSON(ctx, core.SubjectCallback, core.CallbackPayload{
 			WebhookURL: info.WebhookURL,
 			Body:       data,
-		}
-
-		err = s.events.PublishJSON(ctx, core.SubjectCallback, payload)
+		})
 		if err != nil {
 			log.Error().Str("subscriber", sub.String()).Str("webhook_url", info.WebhookURL).Err(err).Msgf("publish callback")
 		}
@@ -124,28 +122,63 @@ func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bo
 	return nil
 }
 
-func convertFeedType(ftype Type) core.Type {
+func convertFeedType(ftype Type) inbox.Type {
 	switch ftype {
 	case TypeDao:
-		return core.TypeDao
+		return inbox.TypeDao
 	case TypeProposal:
-		return core.TypeProposal
+		return inbox.TypeProposal
 	default:
-		return core.TypeDao
+		return inbox.TypeDao
 	}
 }
 
-func convertToExternalFeed(item *FeedItem) core.FeedItem {
+func convertToExternalFeed(item *FeedItem) inbox.FeedPayload {
 	// TODO: TBD: Might be we should export feed.id?
 
-	return core.FeedItem{
+	return inbox.FeedPayload{
 		DaoID:        item.DaoID,
 		ProposalID:   item.ProposalID,
 		DiscussionID: item.DiscussionID,
 		Type:         convertFeedType(item.Type),
 		Action:       convertActionToExternal(item.Action),
 		Snapshot:     item.Snapshot,
+		Timeline:     convertToExternalTimeline(item.Timeline),
 	}
+}
+
+func convertToExternalTimeline(timeline Timeline) []inbox.TimelineItem {
+	converted := make([]inbox.TimelineItem, 0, len(timeline))
+
+	for _, t := range timeline {
+		action := convertActionToExternal(t.Action)
+		if action == "" {
+			// TODO: log warning
+			continue
+		}
+
+		converted = append(converted, inbox.TimelineItem{
+			CreatedAt: t.CreatedAt,
+			Action:    action,
+		})
+	}
+
+	return converted
+}
+
+var inboxTimelineActionMap = map[TimelineAction]inbox.TimelineAction{
+	DaoCreated:                  inbox.DaoCreated,
+	DaoUpdated:                  inbox.DaoUpdated,
+	ProposalCreated:             inbox.ProposalCreated,
+	ProposalUpdated:             inbox.ProposalUpdated,
+	ProposalVotingStartsSoon:    inbox.ProposalVotingStartsSoon,
+	ProposalVotingStarted:       inbox.ProposalVotingStarted,
+	ProposalVotingQuorumReached: inbox.ProposalVotingQuorumReached,
+	ProposalVotingEnded:         inbox.ProposalVotingEnded,
+}
+
+func convertActionToExternal(action TimelineAction) inbox.TimelineAction {
+	return inboxTimelineActionMap[action]
 }
 
 func (s *Service) GetByFilters(filters []Filter) (FeedList, error) {
@@ -155,23 +188,4 @@ func (s *Service) GetByFilters(filters []Filter) (FeedList, error) {
 	}
 
 	return list, nil
-}
-
-func convertActionToExternal(action TimelineAction) core.Action {
-	switch action {
-	case DaoCreated, ProposalCreated:
-		return core.ActionCreated
-	case DaoUpdated, ProposalUpdated:
-		return core.ActionUpdated
-	case ProposalVotingStarted:
-		return core.ActionVotingStarted
-	case ProposalVotingStartsSoon:
-		return core.ActionVotingStartsSoon
-	case ProposalVotingQuorumReached:
-		return core.ActionVotingQuorumReached
-	case ProposalVotingEnded:
-		return core.ActionVotingEnded
-	default:
-		return ""
-	}
 }

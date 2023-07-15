@@ -15,6 +15,12 @@ import (
 	"github.com/goverland-labs/core-feed/internal/metrics"
 )
 
+const (
+	proposalMaxPendingElements = 100
+	proposalRateLimit          = 500 * client.KiB
+	proposalExecutionTtl       = time.Minute
+)
+
 // proposalEvents is map event:string => is_unique_event:bool
 type eventConfig struct {
 	isUnique  bool
@@ -43,14 +49,14 @@ var proposalEvents = map[string]eventConfig{
 type ProposalConsumer struct {
 	conn      *nats.Conn
 	service   *Service
-	consumers []*client.Consumer
+	consumers []*client.Consumer[pevents.ProposalPayload]
 }
 
 func NewProposalConsumer(nc *nats.Conn, s *Service) (*ProposalConsumer, error) {
 	c := &ProposalConsumer{
 		conn:      nc,
 		service:   s,
-		consumers: make([]*client.Consumer, 0),
+		consumers: make([]*client.Consumer[pevents.ProposalPayload], 0),
 	}
 
 	return c, nil
@@ -134,8 +140,14 @@ func (c *ProposalConsumer) convertToFeedItem(pl pevents.ProposalPayload, timelin
 func (c *ProposalConsumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName("item_proposal")
 
+	opts := []client.ConsumerOpt{
+		client.WithRateLimit(proposalRateLimit),
+		client.WithMaxAckPending(proposalMaxPendingElements),
+		client.WithAckWait(proposalExecutionTtl),
+	}
+
 	for event := range proposalEvents {
-		cc, err := client.NewConsumer(ctx, c.conn, group, event, c.handler(event))
+		cc, err := client.NewConsumer(ctx, c.conn, group, event, c.handler(event), opts...)
 		if err != nil {
 			return fmt.Errorf("consume for %s/%s: %w", group, event, err)
 		}

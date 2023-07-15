@@ -3,6 +3,7 @@ package item
 import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var emptyID uuid.UUID
@@ -16,11 +17,25 @@ func NewRepo(conn *gorm.DB) *Repo {
 }
 
 func (r *Repo) Save(item *FeedItem) error {
+	var (
+		_ = item.DaoID
+		_ = item.ProposalID
+		_ = item.DiscussionID
+	)
+
 	if item.ID == emptyID {
 		item.ID = uuid.New()
 	}
 
-	return r.conn.Save(item).Error
+	err := r.conn.
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "dao_id"}, {Name: "proposal_id"}, {Name: "discussion_id"}},
+			UpdateAll: true,
+		}).
+		Create(item).
+		Error
+
+	return err
 }
 
 func (r *Repo) GetDaoItem(id uuid.UUID) (*FeedItem, error) {

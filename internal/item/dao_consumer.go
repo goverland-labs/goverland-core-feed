@@ -15,17 +15,23 @@ import (
 	"github.com/goverland-labs/core-feed/internal/metrics"
 )
 
+const (
+	daoMaxPendingElements = 100
+	daoRateLimit          = 500 * client.KiB
+	daoExecutionTtl       = time.Minute
+)
+
 type DaoConsumer struct {
 	conn      *nats.Conn
 	service   *Service
-	consumers []*client.Consumer
+	consumers []*client.Consumer[pevents.DaoPayload]
 }
 
 func NewDaoConsumer(nc *nats.Conn, s *Service) (*DaoConsumer, error) {
 	c := &DaoConsumer{
 		conn:      nc,
 		service:   s,
-		consumers: make([]*client.Consumer, 0),
+		consumers: make([]*client.Consumer[pevents.DaoPayload], 0),
 	}
 
 	return c, nil
@@ -100,8 +106,14 @@ func (c *DaoConsumer) convertToFeedItem(pl pevents.DaoPayload, timeline Timeline
 func (c *DaoConsumer) Start(ctx context.Context) error {
 	group := config.GenerateGroupName("item_dao")
 
+	opts := []client.ConsumerOpt{
+		client.WithRateLimit(daoRateLimit),
+		client.WithMaxAckPending(daoMaxPendingElements),
+		client.WithAckWait(daoExecutionTtl),
+	}
+
 	for _, subj := range []string{pevents.SubjectDaoCreated, pevents.SubjectDaoUpdated} {
-		consumer, err := client.NewConsumer(ctx, c.conn, group, subj, c.handler(subj))
+		consumer, err := client.NewConsumer(ctx, c.conn, group, subj, c.handler(subj), opts...)
 		if err != nil {
 			return fmt.Errorf("consume for %s/%s: %w", group, subj, err)
 		}
@@ -119,14 +131,14 @@ func (c *DaoConsumer) Start(ctx context.Context) error {
 func (c *DaoConsumer) stop() error {
 	for _, cs := range c.consumers {
 		if err := cs.Close(); err != nil {
-			log.Error().Err(err).Msg("cant close feed item consumer")
+			log.Error().Err(err).Msg("unable to close dao consumer")
 		}
 	}
 
 	return nil
 }
 
-func (c *DaoConsumer) prefillTimelineInNeeded(payload pevents.DaoPayload, timeline Timeline) Timeline {
+func (c *DaoConsumer) prefillTimelineInNeeded(_ pevents.DaoPayload, timeline Timeline) Timeline {
 	prepend := make([]TimelineItem, 0, 3)
 
 	if !timeline.ContainsAction(DaoCreated) {

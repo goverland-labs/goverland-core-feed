@@ -14,6 +14,8 @@ create table feed_items
 );
 
 create index idx_feed_items_dao_proposal_discussion_ids_action on feed_items (dao_id, proposal_id, discussion_id, action);
+create index feed_items_dao_id_index on feed_items (dao_id)
+create index feed_items_proposal_id_index on feed_items (proposal_id)
 
 create table subscribers
 (

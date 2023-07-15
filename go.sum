@@ -153,6 +153,10 @@ github.com/goverland-labs/platform-events v0.0.14 h1:N6A5pNHDEjzG8L/1qXpLzvHHLmr
 github.com/goverland-labs/platform-events v0.0.14/go.mod h1:eHUHlDt8di4lqOsECP6uCdTWnxZJ/gdAAXRgtqyE9As=
 github.com/goverland-labs/platform-events v0.0.15 h1:p36Pam1SXgcdl2hUq78GVdP0PlVec+P4e1nmG/Zdlc4=
 github.com/goverland-labs/platform-events v0.0.15/go.mod h1:eHUHlDt8di4lqOsECP6uCdTWnxZJ/gdAAXRgtqyE9As=
+github.com/goverland-labs/platform-events v0.0.20 h1:bzIOK9KSFBW8j8pDT8y7Sx3/cA93Kv5olcCzqNBePUc=
+github.com/goverland-labs/platform-events v0.0.20/go.mod h1:eHUHlDt8di4lqOsECP6uCdTWnxZJ/gdAAXRgtqyE9As=
+github.com/goverland-labs/platform-events v0.1.0 h1:trR/IOcQJRawUQxocLcr5DH4f4Zvl8C1oCJRUYSzkYE=
+github.com/goverland-labs/platform-events v0.1.0/go.mod h1:eHUHlDt8di4lqOsECP6uCdTWnxZJ/gdAAXRgtqyE9As=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 h1:UH//fgunKIs4JdUbpDl1VZCDaL56wXCB/5+wF6uHfaI=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0/go.mod h1:g5qyo/la0ALbONm6Vbp88Yd8NsDy6rZz+RcrMPxvld8=
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 h1:Ovs26xHkKqVztRpIrF/92BcuyuQ/YW4NSIpoGtfXNho=
