@@ -7,11 +7,16 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.15] - 2023-07-15
+
 ### Fixed
 - Fixed getting subscriber by id in the repo
 - Updated platform-events dependency to v0.1.0
 - Fixed saving new feed items (on duplicate)
 - Fixed payload which is sending to the webhook execution
+
+### Changed
+- The feed.id field is exported now
 
 ### Added
 - Added consumers limits (max ack pendings, rate limit, ack wait)
