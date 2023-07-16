@@ -140,9 +140,8 @@ func convertFeedType(ftype Type) inbox.Type {
 }
 
 func convertToExternalFeed(item *FeedItem) inbox.FeedPayload {
-	// TODO: TBD: Might be we should export feed.id?
-
 	return inbox.FeedPayload{
+		ID:           item.ID,
 		DaoID:        item.DaoID,
 		ProposalID:   item.ProposalID,
 		DiscussionID: item.DiscussionID,

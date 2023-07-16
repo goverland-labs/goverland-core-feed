@@ -14,11 +14,13 @@ create table feed_items
 );
 
 create index idx_feed_items_dao_proposal_discussion_ids_action on feed_items (dao_id, proposal_id, discussion_id, action);
-create index feed_items_dao_id_index on feed_items (dao_id)
-create index feed_items_proposal_id_index on feed_items (proposal_id)
+create index feed_items_dao_id_index on feed_items (dao_id);
+create index feed_items_proposal_id_index on feed_items (proposal_id);
 
-alter table feed_items add triggered_at timestamptz default created_at not null;
+alter table feed_items add triggered_at timestamptz;
 create index feed_items_triggered_at_index on feed_items (triggered_at);
+
+create unique index feed_items_dao_proposal_uindex on feed_items (dao_id, proposal_id);
 
 create table subscribers
 (
@@ -39,8 +41,6 @@ create table subscriptions
     dao_id        uuid
 );
 
-create index idx_subscriptions_deleted_at
-    on subscriptions (deleted_at);
+create index idx_subscriptions_deleted_at on subscriptions (deleted_at);
 
-create index idx_subscriptions_subscriber_id_dao_id
-    on subscriptions (subscriber_id, dao_id);
+create index idx_subscriptions_subscriber_id_dao_id on subscriptions (subscriber_id, dao_id);

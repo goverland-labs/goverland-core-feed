@@ -29,7 +29,7 @@ func (r *Repo) Save(item *FeedItem) error {
 
 	err := r.conn.
 		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "dao_id"}, {Name: "proposal_id"}, {Name: "discussion_id"}},
+			Columns:   []clause.Column{{Name: "dao_id"}, {Name: "proposal_id"}},
 			UpdateAll: true,
 		}).
 		Create(item).
