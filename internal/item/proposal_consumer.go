@@ -92,7 +92,7 @@ func (c *ProposalConsumer) handler(action string) pevents.ProposalHandler {
 			eventTime = cfg.extractor(payload)
 		}
 
-		var sendUpdates = false
+		var sendUpdates = true
 		if cfg.isUnique {
 			sendUpdates = timeline.AddUniqueAction(eventTime, cfg.action)
 		} else {
