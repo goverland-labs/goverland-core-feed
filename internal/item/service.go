@@ -177,6 +177,7 @@ var inboxTimelineActionMap = map[TimelineAction]inbox.TimelineAction{
 	ProposalCreated:             inbox.ProposalCreated,
 	ProposalUpdated:             inbox.ProposalUpdated,
 	ProposalVotingStartsSoon:    inbox.ProposalVotingStartsSoon,
+	ProposalVotingEndsSoon:      inbox.ProposalVotingEndsSoon,
 	ProposalVotingStarted:       inbox.ProposalVotingStarted,
 	ProposalVotingQuorumReached: inbox.ProposalVotingQuorumReached,
 	ProposalVotingEnded:         inbox.ProposalVotingEnded,

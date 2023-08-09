@@ -27,6 +27,7 @@ var timelineActionsMap = map[TimelineAction]proto.FeedTimelineItem_TimelineActio
 	ProposalCreated:             proto.FeedTimelineItem_ProposalCreated,
 	ProposalUpdated:             proto.FeedTimelineItem_ProposalUpdated,
 	ProposalVotingStartsSoon:    proto.FeedTimelineItem_ProposalVotingStartsSoon,
+	ProposalVotingEndsSoon:      proto.FeedTimelineItem_ProposalVotingEndsSoon,
 	ProposalVotingStarted:       proto.FeedTimelineItem_ProposalVotingStarted,
 	ProposalVotingQuorumReached: proto.FeedTimelineItem_ProposalVotingQuorumReached,
 	ProposalVotingEnded:         proto.FeedTimelineItem_ProposalVotingEnded,
