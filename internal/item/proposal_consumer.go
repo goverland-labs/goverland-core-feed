@@ -35,6 +35,7 @@ var proposalEvents = map[string]eventConfig{
 		return time.Unix(int64(payload.Created), 0).UTC()
 	}},
 	pevents.SubjectProposalVotingStartsSoon: {isUnique: true, action: ProposalVotingStartsSoon},
+	pevents.SubjectProposalVotingEndsSoon:   {isUnique: true, action: ProposalVotingEndsSoon},
 	pevents.SubjectProposalVotingStarted: {isUnique: true, action: ProposalVotingStarted, extractor: func(payload pevents.ProposalPayload) time.Time {
 		return time.Unix(int64(payload.Start), 0).UTC()
 	}},
