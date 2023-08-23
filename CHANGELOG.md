@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.17] - 2023-08-23
+
 ### Fixed
 - Fixed sending proposals updates to the pipeline if was added non-unique action to the timeline
 
