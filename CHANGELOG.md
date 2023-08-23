@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- Send timeline to the queue
+
 ## [0.0.17] - 2023-08-23
 
 ### Fixed

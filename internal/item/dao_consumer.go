@@ -56,11 +56,10 @@ func (c *DaoConsumer) handler(action string) pevents.DaoHandler {
 			timeline = item.Timeline
 		}
 
-		var sendUpdates = true
 		now := time.Now().UTC()
 		switch action {
 		case pevents.SubjectDaoCreated:
-			sendUpdates = timeline.AddUniqueAction(now, DaoCreated)
+			_ = timeline.AddUniqueAction(now, DaoCreated)
 		case pevents.SubjectDaoUpdated:
 			timeline.AddNonUniqueAction(now, DaoUpdated)
 		}
@@ -76,7 +75,8 @@ func (c *DaoConsumer) handler(action string) pevents.DaoHandler {
 			item.Timeline = timeline
 		}
 
-		err = c.service.HandleItem(context.TODO(), item, sendUpdates)
+		// todo: enable when we will be ready to handle proposal feed
+		err = c.service.HandleItem(context.TODO(), item, false)
 		if err != nil {
 			log.Error().Str("dao_id", payload.ID.String()).Err(err).Msg("process dao")
 			return err
