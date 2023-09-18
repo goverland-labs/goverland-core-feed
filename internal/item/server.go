@@ -70,10 +70,6 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) 
 		filters = append(filters, ActionFilter{Actions: req.GetActions()})
 	}
 
-	if len(req.GetActions()) != 0 {
-		filters = append(filters, ActionFilter{Actions: req.GetActions()})
-	}
-
 	if len(req.GetTypes()) != 0 {
 		filters = append(filters, TypeFilter{Types: req.GetTypes()})
 	}

@@ -6,7 +6,7 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
-	github.com/goverland-labs/core-api v0.0.17-0.20230914120939-130bc44e844a
+	github.com/goverland-labs/core-api v0.0.17
 	github.com/goverland-labs/platform-events v0.1.5
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
