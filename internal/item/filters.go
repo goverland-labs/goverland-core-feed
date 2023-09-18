@@ -18,11 +18,11 @@ func (f PageFilter) Apply(db *gorm.DB) *gorm.DB {
 }
 
 type DaoIDFilter struct {
-	ID string
+	IDs []string
 }
 
 func (f DaoIDFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Where("dao_id = ?", f.ID)
+	return db.Where("dao_id in ?", f.IDs)
 }
 
 type TypeFilter struct {
@@ -31,6 +31,18 @@ type TypeFilter struct {
 
 func (f TypeFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("type IN ?", f.Types)
+}
+
+type ActiveFilter struct {
+	IsActive bool
+}
+
+func (f ActiveFilter) Apply(db *gorm.DB) *gorm.DB {
+	if f.IsActive {
+		return db.Where("to_timestamp((snapshot->'start')::double precision) <= now() and to_timestamp((snapshot->'end')::double precision) >= now()")
+	}
+
+	return db.Where("to_timestamp((snapshot->'end')::double precision) < now()")
 }
 
 type ActionFilter struct {
