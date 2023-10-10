@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+- Sort order of feeds
+
 ## [0.0.16] - 2023-08-14
 
 ### Added
