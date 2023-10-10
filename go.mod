@@ -6,8 +6,8 @@ require (
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
-	github.com/goverland-labs/core-api v0.0.13
-	github.com/goverland-labs/platform-events v0.1.4
+	github.com/goverland-labs/core-api v0.0.17
+	github.com/goverland-labs/platform-events v0.1.5
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/nats-io/nats.go v1.25.0

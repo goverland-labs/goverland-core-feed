@@ -95,6 +95,17 @@ func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bo
 		return nil
 	}
 
+	err := s.events.PublishJSON(ctx, core.SubjectTimelineUpdate, core.TimelinePayload{
+		DaoID:        item.DaoID,
+		ProposalID:   item.ProposalID,
+		DiscussionID: item.DiscussionID,
+		Timeline:     convertTimelineToCore(item.Timeline),
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("timeline update")
+		return nil
+	}
+
 	subs, err := s.subscriptions.GetSubscribers(ctx, item.DaoID)
 	if err != nil {
 		log.Error().Err(err).Msg("get subscribers")
@@ -126,6 +137,22 @@ func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bo
 	}
 
 	return nil
+}
+
+func convertTimelineToCore(pl Timeline) []core.TimelineItem {
+	if len(pl) == 0 {
+		return nil
+	}
+
+	res := make([]core.TimelineItem, len(pl))
+	for i := range pl {
+		res[i] = core.TimelineItem{
+			CreatedAt: pl[i].CreatedAt,
+			Action:    core.TimelineAction(pl[i].Action),
+		}
+	}
+
+	return res
 }
 
 func convertFeedType(ftype Type) inbox.Type {

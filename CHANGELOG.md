@@ -10,6 +10,21 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Fixed
 - Sort order of feeds
 
+## [0.0.19] - 2023-09-18
+
+### Changed
+- Extend get feed filters
+
+## [0.0.18] - 2023-08-23
+
+### Added
+- Send timeline to the queue
+
+## [0.0.17] - 2023-08-23
+
+### Fixed
+- Fixed sending proposals updates to the pipeline if was added non-unique action to the timeline
+
 ## [0.0.16] - 2023-08-14
 
 ### Added

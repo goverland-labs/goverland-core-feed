@@ -58,12 +58,12 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) 
 		OrderByCreatedFilter{},
 	}
 
+	// todo: deprecated. remove after updating core-api version in all related services
 	if req.GetDaoId() != "" {
-		filters = append(filters, DaoIDFilter{ID: req.GetDaoId()})
+		filters = append(filters, DaoIDFilter{IDs: []string{req.GetDaoId()}})
 	}
-
-	if len(req.GetActions()) != 0 {
-		filters = append(filters, ActionFilter{Actions: req.GetActions()})
+	if len(req.GetDaoIds()) > 0 {
+		filters = append(filters, DaoIDFilter{IDs: req.GetDaoIds()})
 	}
 
 	if len(req.GetActions()) != 0 {
@@ -72,6 +72,10 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) 
 
 	if len(req.GetTypes()) != 0 {
 		filters = append(filters, TypeFilter{Types: req.GetTypes()})
+	}
+
+	if req.IsActive != nil {
+		filters = append(filters, ActiveFilter{IsActive: req.GetIsActive()})
 	}
 
 	list, err := s.service.GetByFilters(filters)
