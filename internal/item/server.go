@@ -55,7 +55,7 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) 
 	}
 	filters := []Filter{
 		PageFilter{Limit: limit, Offset: offset},
-		OrderByTriggeredFilter{},
+		OrderByCreatedFilter{},
 	}
 
 	// todo: deprecated. remove after updating core-api version in all related services
