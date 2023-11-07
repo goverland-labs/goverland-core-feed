@@ -7,10 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [0.0.20] - 2023-11-07
+## [0.0.21] - 2023-11-07
 
 ### Changed
 - Actualize active feed items condition
+
+## [0.0.20] - 2023-10-07
 
 ### Fixed
 - Sort order of feeds
