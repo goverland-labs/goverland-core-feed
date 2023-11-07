@@ -7,6 +7,9 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Actualize active feed items condition
+
 ### Fixed
 - Sort order of feeds
 

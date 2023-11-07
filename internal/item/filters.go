@@ -39,7 +39,7 @@ type ActiveFilter struct {
 
 func (f ActiveFilter) Apply(db *gorm.DB) *gorm.DB {
 	if f.IsActive {
-		return db.Where("to_timestamp((snapshot->'start')::double precision) <= now() and to_timestamp((snapshot->'end')::double precision) >= now()")
+		return db.Where("to_timestamp((snapshot->'end')::double precision) >= now()")
 	}
 
 	return db.Where("to_timestamp((snapshot->'end')::double precision) < now()")
