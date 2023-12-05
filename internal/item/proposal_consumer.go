@@ -107,16 +107,22 @@ func (c *ProposalConsumer) handler(action string) pevents.ProposalHandler {
 				return err
 			}
 		} else {
+			sn, err := json.Marshal(payload)
+			if err != nil {
+				return fmt.Errorf("cant marshal payload: %w", err)
+			}
+
+			item.Snapshot = sn
 			item.Timeline = timeline
 		}
 
 		err = c.service.HandleItem(context.TODO(), item, sendUpdates)
 		if err != nil {
-			log.Error().Err(err).Msg("process dao")
+			log.Error().Err(err).Msg("process proposal")
 			return err
 		}
 
-		log.Debug().Msgf("dao was processed: %s", payload.ID)
+		log.Debug().Msgf("proposal was processed: %s", payload.ID)
 
 		return nil
 	}
