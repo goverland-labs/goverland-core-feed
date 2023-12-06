@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.22] - 2023-12-06
+
 ### Changed
 - Actualize source libraries
 
