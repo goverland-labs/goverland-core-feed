@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.23] - 2024-02-06
+
 ### Changed
 - Up platform events library
 
