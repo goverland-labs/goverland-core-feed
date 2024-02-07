@@ -66,3 +66,27 @@ type OrderByTriggeredFilter struct {
 func (f OrderByTriggeredFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Order("triggered_at desc")
 }
+
+type SkipSpammed struct {
+}
+
+func (f SkipSpammed) Apply(db *gorm.DB) *gorm.DB {
+	var (
+		dummy FeedItem
+		_     = dummy.Snapshot // spam flag
+	)
+
+	return db.Where(`snapshot->>'spam' != 'true'`)
+}
+
+type SkipCanceled struct {
+}
+
+func (f SkipCanceled) Apply(db *gorm.DB) *gorm.DB {
+	var (
+		dummy FeedItem
+		_     = dummy.Snapshot // state
+	)
+
+	return db.Where(`snapshot->>'state' != 'canceled'`)
+}
