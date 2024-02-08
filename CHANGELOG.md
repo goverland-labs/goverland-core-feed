@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.24] - 2024-02-08
+
+### Added
+- Filter spam and canceled proposals in feed
+
 ## [0.0.23] - 2024-02-06
 
 ### Changed
