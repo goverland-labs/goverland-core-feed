@@ -54,6 +54,8 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) 
 		offset = int(req.GetOffset())
 	}
 	filters := []Filter{
+		SkipSpammed{},
+		SkipCanceled{},
 		PageFilter{Limit: limit, Offset: offset},
 		OrderByCreatedFilter{},
 	}
