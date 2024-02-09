@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.0.25] - 2024-02-09
+
+### Changed
+- Changed dao feed sorting from created_at desc to state + created_at
+
 ## [0.0.24] - 2024-02-08
 
 ### Added

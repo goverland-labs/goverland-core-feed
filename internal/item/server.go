@@ -57,7 +57,7 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) 
 		SkipSpammed{},
 		SkipCanceled{},
 		PageFilter{Limit: limit, Offset: offset},
-		OrderByCreatedFilter{},
+		SortedByActuality{},
 	}
 
 	// todo: deprecated. remove after updating core-api version in all related services

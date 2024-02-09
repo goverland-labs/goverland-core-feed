@@ -53,13 +53,6 @@ func (f ActionFilter) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where("action IN ?", f.Actions)
 }
 
-type OrderByCreatedFilter struct {
-}
-
-func (f OrderByCreatedFilter) Apply(db *gorm.DB) *gorm.DB {
-	return db.Order("created_at desc")
-}
-
 type OrderByTriggeredFilter struct {
 }
 
@@ -89,4 +82,26 @@ func (f SkipCanceled) Apply(db *gorm.DB) *gorm.DB {
 	)
 
 	return db.Where(`snapshot->>'state' != 'canceled'`)
+}
+
+type SortedByActuality struct {
+}
+
+func (f SortedByActuality) Apply(db *gorm.DB) *gorm.DB {
+	var (
+		dummy FeedItem
+		_     = dummy.CreatedAt
+		_     = dummy.Snapshot // state
+	)
+
+	return db.Order(`
+				array_position(array [
+					'active',
+					'pending',
+					'succeeded',
+					'failed',
+					'defeated',
+					'canceled'
+				], snapshot->>'state'), 
+				created_at desc`)
 }
