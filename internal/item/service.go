@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/goverland-labs/platform-events/events/core"
@@ -37,6 +38,9 @@ type SubscriptionProvider interface {
 }
 
 type Service struct {
+	cacheMu sync.RWMutex
+	cache   map[string]FeedList
+
 	repo          DataProvider
 	events        Publisher
 	subscribers   SubscriberProvider
@@ -49,6 +53,8 @@ func NewService(r DataProvider, p Publisher, sub SubscriberProvider, sp Subscrip
 		events:        p,
 		subscribers:   sub,
 		subscriptions: sp,
+		cache:         make(map[string]FeedList),
+		cacheMu:       sync.RWMutex{},
 	}, nil
 }
 
@@ -81,6 +87,10 @@ func (s *Service) GetProposalItem(_ context.Context, id string) (*FeedItem, erro
 }
 
 func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bool) error {
+	defer func() {
+		s.invalidateCache(item)
+	}()
+
 	item.Timeline.Sort()
 
 	if len(item.Timeline) > 0 {
@@ -215,10 +225,36 @@ func convertActionToExternal(action TimelineAction) inbox.TimelineAction {
 }
 
 func (s *Service) GetByFilters(filters []Filter) (FeedList, error) {
+	key := fmt.Sprintf("%v", filters)
+	s.cacheMu.RLock()
+	list, ok := s.cache[key]
+	s.cacheMu.RUnlock()
+	if ok && len(list.Items) > 0 {
+		return list, nil
+	}
+
 	list, err := s.repo.GetByFilters(filters)
 	if err != nil {
 		return FeedList{}, fmt.Errorf("get by filters: %w", err)
 	}
 
+	s.cacheMu.Lock()
+	s.cache[key] = list
+	s.cacheMu.Unlock()
+
 	return list, nil
+}
+
+func (s *Service) invalidateCache(item *FeedItem) {
+	s.cacheMu.Lock()
+	defer s.cacheMu.Unlock()
+
+	for key, list := range s.cache {
+		for idx := range list.Items {
+			if list.Items[idx].ProposalID == item.ProposalID ||
+				list.Items[idx].DaoID == item.DaoID {
+				delete(s.cache, key)
+			}
+		}
+	}
 }
