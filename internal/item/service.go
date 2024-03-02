@@ -13,7 +13,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	"github.com/goverland-labs/core-feed/internal/subscriber"
+	"github.com/goverland-labs/goverland-core-feed/internal/subscriber"
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=item . DataProvider,Publisher
