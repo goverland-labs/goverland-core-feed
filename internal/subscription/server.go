@@ -12,9 +12,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 
-	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
-
 	"github.com/goverland-labs/goverland-core-feed/internal/subscriber"
+	"github.com/goverland-labs/goverland-core-feed/protocol/feedpb"
 )
 
 type SubscriptionProvider interface {
@@ -23,7 +22,7 @@ type SubscriptionProvider interface {
 }
 
 type Server struct {
-	proto.UnimplementedSubscriptionServer
+	feedpb.UnimplementedSubscriptionServer
 
 	sp SubscriptionProvider
 }
@@ -34,7 +33,7 @@ func NewServer(sp SubscriptionProvider) *Server {
 	}
 }
 
-func (s *Server) Subscribe(ctx context.Context, req *proto.SubscribeRequest) (*emptypb.Empty, error) {
+func (s *Server) Subscribe(ctx context.Context, req *feedpb.SubscribeRequest) (*emptypb.Empty, error) {
 	subID := subscriber.GetSubscriberID(ctx)
 
 	if req.GetDaoId() == "" {
@@ -60,7 +59,7 @@ func (s *Server) Subscribe(ctx context.Context, req *proto.SubscribeRequest) (*e
 	return &emptypb.Empty{}, nil
 }
 
-func (s *Server) Unsubscribe(ctx context.Context, req *proto.UnsubscribeRequest) (*emptypb.Empty, error) {
+func (s *Server) Unsubscribe(ctx context.Context, req *feedpb.UnsubscribeRequest) (*emptypb.Empty, error) {
 	subID := subscriber.GetSubscriberID(ctx)
 
 	if req.GetDaoId() == "" {

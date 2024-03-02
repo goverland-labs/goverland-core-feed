@@ -10,6 +10,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Changed
 - Changed the path name of the go module
 - Updated dependencies versions
+- Migrated protocol to this repo as different module
 
 ### Added
 - Added LICENSE information

@@ -3,12 +3,13 @@ package item
 import (
 	"context"
 
-	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/goverland-labs/goverland-core-feed/protocol/feedpb"
 )
 
 const (
@@ -16,25 +17,25 @@ const (
 	defaultOffset = 0
 )
 
-var feedItemTypeMap = map[Type]proto.FeedInfo_Type{
-	TypeDao:      proto.FeedInfo_DAO,
-	TypeProposal: proto.FeedInfo_Proposal,
+var feedItemTypeMap = map[Type]feedpb.FeedInfo_Type{
+	TypeDao:      feedpb.FeedInfo_DAO,
+	TypeProposal: feedpb.FeedInfo_Proposal,
 }
 
-var timelineActionsMap = map[TimelineAction]proto.FeedTimelineItem_TimelineAction{
-	DaoCreated:                  proto.FeedTimelineItem_DaoCreated,
-	DaoUpdated:                  proto.FeedTimelineItem_DaoUpdated,
-	ProposalCreated:             proto.FeedTimelineItem_ProposalCreated,
-	ProposalUpdated:             proto.FeedTimelineItem_ProposalUpdated,
-	ProposalVotingStartsSoon:    proto.FeedTimelineItem_ProposalVotingStartsSoon,
-	ProposalVotingEndsSoon:      proto.FeedTimelineItem_ProposalVotingEndsSoon,
-	ProposalVotingStarted:       proto.FeedTimelineItem_ProposalVotingStarted,
-	ProposalVotingQuorumReached: proto.FeedTimelineItem_ProposalVotingQuorumReached,
-	ProposalVotingEnded:         proto.FeedTimelineItem_ProposalVotingEnded,
+var timelineActionsMap = map[TimelineAction]feedpb.FeedTimelineItem_TimelineAction{
+	DaoCreated:                  feedpb.FeedTimelineItem_DaoCreated,
+	DaoUpdated:                  feedpb.FeedTimelineItem_DaoUpdated,
+	ProposalCreated:             feedpb.FeedTimelineItem_ProposalCreated,
+	ProposalUpdated:             feedpb.FeedTimelineItem_ProposalUpdated,
+	ProposalVotingStartsSoon:    feedpb.FeedTimelineItem_ProposalVotingStartsSoon,
+	ProposalVotingEndsSoon:      feedpb.FeedTimelineItem_ProposalVotingEndsSoon,
+	ProposalVotingStarted:       feedpb.FeedTimelineItem_ProposalVotingStarted,
+	ProposalVotingQuorumReached: feedpb.FeedTimelineItem_ProposalVotingQuorumReached,
+	ProposalVotingEnded:         feedpb.FeedTimelineItem_ProposalVotingEnded,
 }
 
 type Server struct {
-	proto.UnimplementedFeedServer
+	feedpb.UnimplementedFeedServer
 
 	service *Service
 }
@@ -45,7 +46,7 @@ func NewServer(sp *Service) *Server {
 	}
 }
 
-func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) (*proto.FeedByFilterResponse, error) {
+func (s *Server) GetByFilter(_ context.Context, req *feedpb.FeedByFilterRequest) (*feedpb.FeedByFilterResponse, error) {
 	limit, offset := defaultLimit, defaultOffset
 	if req.GetLimit() > 0 {
 		limit = int(req.GetLimit())
@@ -87,19 +88,19 @@ func (s *Server) GetByFilter(_ context.Context, req *proto.FeedByFilterRequest) 
 		return nil, status.Error(codes.Internal, "internal error")
 	}
 
-	items := make([]*proto.FeedInfo, len(list.Items))
+	items := make([]*feedpb.FeedInfo, len(list.Items))
 	for i, info := range list.Items {
 		items[i] = convertFeedItemToAPI(&info)
 	}
 
-	return &proto.FeedByFilterResponse{
+	return &feedpb.FeedByFilterResponse{
 		Items:      items,
 		TotalCount: uint64(list.TotalCount),
 	}, nil
 }
 
-func convertFeedItemToAPI(item *FeedItem) *proto.FeedInfo {
-	return &proto.FeedInfo{
+func convertFeedItemToAPI(item *FeedItem) *feedpb.FeedInfo {
+	return &feedpb.FeedInfo{
 		Id:           item.ID.String(),
 		CreatedAt:    timestamppb.New(item.CreatedAt),
 		UpdatedAt:    timestamppb.New(item.UpdatedAt),
@@ -113,10 +114,10 @@ func convertFeedItemToAPI(item *FeedItem) *proto.FeedInfo {
 	}
 }
 
-func convertTimelineToProto(timeline Timeline) []*proto.FeedTimelineItem {
-	converted := make([]*proto.FeedTimelineItem, 0, len(timeline))
+func convertTimelineToProto(timeline Timeline) []*feedpb.FeedTimelineItem {
+	converted := make([]*feedpb.FeedTimelineItem, 0, len(timeline))
 	for i := range timeline {
-		converted = append(converted, &proto.FeedTimelineItem{
+		converted = append(converted, &feedpb.FeedTimelineItem{
 			CreatedAt: timestamppb.New(timeline[i].CreatedAt),
 			Action:    convertTimelineActionToProto(timeline[i].Action),
 		})
@@ -125,23 +126,23 @@ func convertTimelineToProto(timeline Timeline) []*proto.FeedTimelineItem {
 	return converted
 }
 
-func convertTypeToAPI(t Type) proto.FeedInfo_Type {
+func convertTypeToAPI(t Type) feedpb.FeedInfo_Type {
 	converted, exists := feedItemTypeMap[t]
 	if !exists {
 		log.Warn().Str("action", string(t)).Msg("unknown feed item type")
 
-		return proto.FeedInfo_Unspecified
+		return feedpb.FeedInfo_Unspecified
 	}
 
 	return converted
 }
 
-func convertTimelineActionToProto(action TimelineAction) proto.FeedTimelineItem_TimelineAction {
+func convertTimelineActionToProto(action TimelineAction) feedpb.FeedTimelineItem_TimelineAction {
 	converted, exists := timelineActionsMap[action]
 	if !exists {
 		log.Warn().Str("action", string(action)).Msg("unknown timeline action")
 
-		return proto.FeedTimelineItem_Unspecified
+		return feedpb.FeedTimelineItem_Unspecified
 	}
 
 	return converted

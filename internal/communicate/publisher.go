@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/goverland-labs/platform-events/pkg/natsclient"
+	"github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 )
 
