@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.0] - 2024-03-02
+
 ### Changed
 - Changed the path name of the go module
 - Updated dependencies versions
@@ -18,8 +20,6 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added github issues templates
 - Added linter and unit-tests workflows for github actions
 - Added badges with link to the license and passed workflows
-
-### Added
 - Feed caching by filters 
 
 ## [0.0.25] - 2024-02-09
