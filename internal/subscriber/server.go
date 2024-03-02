@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 	"gorm.io/gorm"
 
-	proto "github.com/goverland-labs/core-api/protobuf/internalapi"
+	"github.com/goverland-labs/goverland-core-feed/protocol/feedpb"
 )
 
 type SubscriberProvider interface {
@@ -22,7 +22,7 @@ type SubscriberProvider interface {
 }
 
 type Server struct {
-	proto.UnimplementedSubscriberServer
+	feedpb.UnimplementedSubscriberServer
 
 	sp SubscriberProvider
 }
@@ -33,7 +33,7 @@ func NewServer(sp SubscriberProvider) *Server {
 	}
 }
 
-func (s *Server) Create(ctx context.Context, req *proto.CreateSubscriberRequest) (*proto.CreateSubscriberResponse, error) {
+func (s *Server) Create(ctx context.Context, req *feedpb.CreateSubscriberRequest) (*feedpb.CreateSubscriberResponse, error) {
 	if req.GetWebhookUrl() != "" {
 		if _, err := url.ParseRequestURI(req.GetWebhookUrl()); err != nil {
 			return nil, status.Error(codes.InvalidArgument, "invalid webhook url")
@@ -49,10 +49,10 @@ func (s *Server) Create(ctx context.Context, req *proto.CreateSubscriberRequest)
 
 	log.Debug().Msgf("create subscriber: %s", sub.ID)
 
-	return &proto.CreateSubscriberResponse{SubscriberId: sub.ID.String()}, nil
+	return &feedpb.CreateSubscriberResponse{SubscriberId: sub.ID.String()}, nil
 }
 
-func (s *Server) Update(ctx context.Context, req *proto.UpdateSubscriberRequest) (*emptypb.Empty, error) {
+func (s *Server) Update(ctx context.Context, req *feedpb.UpdateSubscriberRequest) (*emptypb.Empty, error) {
 	subID := GetSubscriberID(ctx)
 	if req.GetWebhookUrl() != "" {
 		if _, err := url.ParseRequestURI(req.GetWebhookUrl()); err != nil {

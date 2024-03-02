@@ -11,16 +11,15 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/goverland-labs/core-api/protobuf/internalapi"
-
-	"github.com/goverland-labs/core-feed/internal/communicate"
-	"github.com/goverland-labs/core-feed/internal/config"
-	"github.com/goverland-labs/core-feed/internal/item"
-	"github.com/goverland-labs/core-feed/internal/subscriber"
-	"github.com/goverland-labs/core-feed/internal/subscription"
-	"github.com/goverland-labs/core-feed/pkg/grpcsrv"
-	"github.com/goverland-labs/core-feed/pkg/health"
-	"github.com/goverland-labs/core-feed/pkg/prometheus"
+	"github.com/goverland-labs/goverland-core-feed/internal/communicate"
+	"github.com/goverland-labs/goverland-core-feed/internal/config"
+	"github.com/goverland-labs/goverland-core-feed/internal/item"
+	"github.com/goverland-labs/goverland-core-feed/internal/subscriber"
+	"github.com/goverland-labs/goverland-core-feed/internal/subscription"
+	"github.com/goverland-labs/goverland-core-feed/pkg/grpcsrv"
+	"github.com/goverland-labs/goverland-core-feed/pkg/health"
+	"github.com/goverland-labs/goverland-core-feed/pkg/prometheus"
+	"github.com/goverland-labs/goverland-core-feed/protocol/feedpb"
 )
 
 type Application struct {
@@ -169,15 +168,15 @@ func (a *Application) initAPI() error {
 	srv := grpcsrv.NewGrpcServer(
 		[]string{
 			"/grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo",
-			"/internalapi.Subscriber/Create",
-			"/internalapi.Feed/GetByFilter",
+			"/feedpb.Subscriber/Create",
+			"/feedpb.Feed/GetByFilter",
 		},
 		authInterceptor.AuthAndIdentifyTickerFunc,
 	)
 
-	internalapi.RegisterSubscriberServer(srv, subscriber.NewServer(a.subscribers))
-	internalapi.RegisterSubscriptionServer(srv, subscription.NewServer(a.subscriptions))
-	internalapi.RegisterFeedServer(srv, item.NewServer(a.itemService))
+	feedpb.RegisterSubscriberServer(srv, subscriber.NewServer(a.subscribers))
+	feedpb.RegisterSubscriptionServer(srv, subscription.NewServer(a.subscriptions))
+	feedpb.RegisterFeedServer(srv, item.NewServer(a.itemService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 

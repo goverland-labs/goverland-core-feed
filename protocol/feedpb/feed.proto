@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package feedpb;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+option go_package = ".;feedpb";
+
+service Feed {
+  rpc GetByFilter(FeedByFilterRequest) returns (FeedByFilterResponse);
+}
+
+message FeedInfo {
+  enum Type {
+    Unspecified = 0;
+    DAO = 1;
+    Proposal = 2;
+  }
+
+  string id = 1;
+  google.protobuf.Timestamp created_at = 2;
+  google.protobuf.Timestamp updated_at = 3;
+  string dao_id = 4;
+  string proposal_id = 5;
+  string discussion_id = 6;
+  string action = 7;
+  google.protobuf.Any snapshot = 8;
+  Type type = 9;
+  repeated FeedTimelineItem timeline = 10;
+}
+
+message FeedTimelineItem {
+  enum TimelineAction {
+    Unspecified = 0;
+    DaoCreated = 1;
+    DaoUpdated = 2;
+    ProposalCreated = 3;
+    ProposalUpdated = 4;
+    ProposalVotingStartsSoon = 5;
+    ProposalVotingStarted = 6;
+    ProposalVotingQuorumReached = 7;
+    ProposalVotingEnded = 8;
+    ProposalVotingEndsSoon = 9;
+  }
+
+  google.protobuf.Timestamp created_at = 1;
+  TimelineAction action = 2;
+}
+
+message FeedByFilterRequest {
+  optional string dao_id = 1 [deprecated = true];
+  repeated string types = 2;
+  repeated string actions = 3;
+  optional uint64 limit = 4;
+  optional uint64 offset = 5;
+  repeated string dao_ids = 6;
+  optional bool is_active = 7;
+}
+
+message FeedByFilterResponse {
+  repeated FeedInfo items = 1;
+  uint64 total_count = 2;
+}

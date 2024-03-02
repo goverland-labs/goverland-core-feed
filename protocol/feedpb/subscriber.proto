@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package feedpb;
+
+import "google/protobuf/empty.proto";
+
+option go_package = ".;feedpb";
+
+service Subscriber {
+  rpc Create(CreateSubscriberRequest) returns (CreateSubscriberResponse);
+  rpc Update(UpdateSubscriberRequest) returns (google.protobuf.Empty);
+}
+
+message CreateSubscriberRequest {
+  string webhook_url = 2;
+}
+
+message CreateSubscriberResponse {
+  string subscriber_id = 1;
+}
+
+message UpdateSubscriberRequest {
+  string webhook_url = 2;
+}

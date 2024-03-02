@@ -8,12 +8,12 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-	"github.com/goverland-labs/platform-events/events/core"
-	"github.com/goverland-labs/platform-events/events/inbox"
+	"github.com/goverland-labs/goverland-platform-events/events/core"
+	"github.com/goverland-labs/goverland-platform-events/events/inbox"
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
-	"github.com/goverland-labs/core-feed/internal/subscriber"
+	"github.com/goverland-labs/goverland-core-feed/internal/subscriber"
 )
 
 //go:generate mockgen -destination=mocks_test.go -package=item . DataProvider,Publisher

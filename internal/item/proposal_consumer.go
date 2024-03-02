@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"time"
 
-	pevents "github.com/goverland-labs/platform-events/events/core"
-	client "github.com/goverland-labs/platform-events/pkg/natsclient"
+	pevents "github.com/goverland-labs/goverland-platform-events/events/core"
+	client "github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 	"github.com/rs/zerolog/log"
 
-	"github.com/goverland-labs/core-feed/internal/config"
-	"github.com/goverland-labs/core-feed/internal/metrics"
+	"github.com/goverland-labs/goverland-core-feed/internal/config"
+	"github.com/goverland-labs/goverland-core-feed/internal/metrics"
 )
 
 const (
