@@ -1,4 +1,4 @@
-FROM golang:1.20-alpine3.18 AS builder
+FROM golang:1.21-alpine3.18 AS builder
 
 ARG GITHUB_TOKEN=""
 
@@ -16,6 +16,7 @@ RUN go env -w GOPRIVATE=github.com/goverland-labs/*
 
 # Download dependencies
 COPY go.mod go.sum ./
+COPY protocol/go.mod protocol/go.sum ./
 RUN go mod download && go mod verify
 
 # Copy an application's source

@@ -61,7 +61,7 @@ func (s *Server) GetByFilter(_ context.Context, req *feedpb.FeedByFilterRequest)
 		SortedByActuality{},
 	}
 
-	// todo: deprecated. remove after updating core-api version in all related services
+	// nolint:staticcheck // todo: deprecated. remove after updating core-api version in all related services
 	if req.GetDaoId() != "" {
 		filters = append(filters, DaoIDFilter{IDs: []string{req.GetDaoId()}})
 	}

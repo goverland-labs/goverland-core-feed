@@ -6,12 +6,14 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/goverland-labs/goverland-platform-events/pkg/natsclient"
 	"github.com/nats-io/nats.go"
 	"github.com/s-larionov/process-manager"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
-	"github.com/goverland-labs/goverland-core-feed/internal/communicate"
+	"github.com/goverland-labs/goverland-core-feed/protocol/feedpb"
+
 	"github.com/goverland-labs/goverland-core-feed/internal/config"
 	"github.com/goverland-labs/goverland-core-feed/internal/item"
 	"github.com/goverland-labs/goverland-core-feed/internal/subscriber"
@@ -19,7 +21,6 @@ import (
 	"github.com/goverland-labs/goverland-core-feed/pkg/grpcsrv"
 	"github.com/goverland-labs/goverland-core-feed/pkg/health"
 	"github.com/goverland-labs/goverland-core-feed/pkg/prometheus"
-	"github.com/goverland-labs/goverland-core-feed/protocol/feedpb"
 )
 
 type Application struct {
@@ -111,7 +112,7 @@ func (a *Application) initServices() error {
 		return err
 	}
 
-	pb, err := communicate.NewPublisher(nc)
+	pb, err := natsclient.NewPublisher(nc)
 	if err != nil {
 		return err
 	}
@@ -136,7 +137,7 @@ func (a *Application) initServices() error {
 	return nil
 }
 
-func (a *Application) initDataConsumers(nc *nats.Conn, pb *communicate.Publisher) error {
+func (a *Application) initDataConsumers(nc *nats.Conn, pb *natsclient.Publisher) error {
 	repo := item.NewRepo(a.db)
 	service, err := item.NewService(repo, pb, a.subscribers, a.subscriptions)
 	if err != nil {
