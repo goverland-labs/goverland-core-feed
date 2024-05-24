@@ -58,7 +58,9 @@ func (s *Server) GetByFilter(_ context.Context, req *feedpb.FeedByFilterRequest)
 		SkipSpammed{},
 		SkipCanceled{},
 		PageFilter{Limit: limit, Offset: offset},
-		SortedByActuality{},
+		SortedByCreated{
+			Direction: DirectionDesc,
+		},
 	}
 
 	// nolint:staticcheck // todo: deprecated. remove after updating core-api version in all related services
