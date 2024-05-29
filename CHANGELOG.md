@@ -7,6 +7,8 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.3] - 2024-05-29
+
 ### Changed
 - Sorting dao feed by creation date desc
 
