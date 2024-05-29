@@ -1,7 +1,16 @@
 package item
 
 import (
+	"fmt"
+
 	"gorm.io/gorm"
+)
+
+type Direction string
+
+const (
+	DirectionAsc  Direction = "asc"
+	DirectionDesc Direction = "desc"
 )
 
 type Filter interface {
@@ -104,4 +113,17 @@ func (f SortedByActuality) Apply(db *gorm.DB) *gorm.DB {
 					'canceled'
 				], snapshot->>'state'), 
 				created_at desc`)
+}
+
+type SortedByCreated struct {
+	Direction Direction
+}
+
+func (f SortedByCreated) Apply(db *gorm.DB) *gorm.DB {
+	var (
+		dummy FeedItem
+		_     = dummy.CreatedAt
+	)
+
+	return db.Order(fmt.Sprintf("created_at %s", f.Direction))
 }
