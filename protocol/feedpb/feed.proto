@@ -16,6 +16,7 @@ message FeedInfo {
     Unspecified = 0;
     DAO = 1;
     Proposal = 2;
+    Delegate = 3;
   }
 
   string id = 1;
@@ -42,6 +43,7 @@ message FeedTimelineItem {
     ProposalVotingQuorumReached = 7;
     ProposalVotingEnded = 8;
     ProposalVotingEndsSoon = 9;
+    DelegateCreateProposal = 10;
   }
 
   google.protobuf.Timestamp created_at = 1;
