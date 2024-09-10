@@ -160,6 +160,13 @@ func (a *Application) initDataConsumers(nc *nats.Conn, pb *natsclient.Publisher)
 
 	a.manager.AddWorker(process.NewCallbackWorker("item-proposal-consumer", pc.Start))
 
+	dlc, err := item.NewDelegatesConsumer(nc, service)
+	if err != nil {
+		return fmt.Errorf("item proposal consumer: %w", err)
+	}
+
+	a.manager.AddWorker(process.NewCallbackWorker("item-delegate-consumer", dlc.Start))
+
 	return nil
 }
 

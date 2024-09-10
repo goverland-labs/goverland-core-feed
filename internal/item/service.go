@@ -105,15 +105,17 @@ func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bo
 		return nil
 	}
 
-	err := s.events.PublishJSON(ctx, core.SubjectTimelineUpdate, core.TimelinePayload{
-		DaoID:        item.DaoID,
-		ProposalID:   item.ProposalID,
-		DiscussionID: item.DiscussionID,
-		Timeline:     convertTimelineToCore(item.Timeline),
-	})
-	if err != nil {
-		log.Error().Err(err).Msg("timeline update")
-		return nil
+	// send timeline update only for proposals
+	if item.Type == TypeProposal {
+		err := s.events.PublishJSON(ctx, core.SubjectTimelineUpdate, core.TimelinePayload{
+			DaoID:        item.DaoID,
+			ProposalID:   item.ProposalID,
+			DiscussionID: item.DiscussionID,
+			Timeline:     convertTimelineToCore(item.Timeline),
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("send timeline update")
+		}
 	}
 
 	subs, err := s.subscriptions.GetSubscribers(ctx, item.DaoID)
@@ -171,6 +173,8 @@ func convertFeedType(ftype Type) inbox.Type {
 		return inbox.TypeDao
 	case TypeProposal:
 		return inbox.TypeProposal
+	case TypeDelegate:
+		return inbox.TypeDelegate
 	default:
 		return inbox.TypeDao
 	}
@@ -218,6 +222,7 @@ var inboxTimelineActionMap = map[TimelineAction]inbox.TimelineAction{
 	ProposalVotingStarted:       inbox.ProposalVotingStarted,
 	ProposalVotingQuorumReached: inbox.ProposalVotingQuorumReached,
 	ProposalVotingEnded:         inbox.ProposalVotingEnded,
+	DelegateCreateProposal:      inbox.DelegateCreateProposal,
 }
 
 func convertActionToExternal(action TimelineAction) inbox.TimelineAction {
