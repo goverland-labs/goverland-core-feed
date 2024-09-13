@@ -34,6 +34,8 @@ var timelineActionsMap = map[TimelineAction]feedpb.FeedTimelineItem_TimelineActi
 	ProposalVotingQuorumReached: feedpb.FeedTimelineItem_ProposalVotingQuorumReached,
 	ProposalVotingEnded:         feedpb.FeedTimelineItem_ProposalVotingEnded,
 	DelegateCreateProposal:      feedpb.FeedTimelineItem_DelegateCreateProposal,
+	DelegateVotingVoted:         feedpb.FeedTimelineItem_DelegateVotingVoted,
+	DelegateVotingSkipVote:      feedpb.FeedTimelineItem_DelegateVotingSkipVote,
 }
 
 type Server struct {

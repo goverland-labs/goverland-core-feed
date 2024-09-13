@@ -44,6 +44,8 @@ message FeedTimelineItem {
     ProposalVotingEnded = 8;
     ProposalVotingEndsSoon = 9;
     DelegateCreateProposal = 10;
+    DelegateVotingVoted = 11;
+    DelegateVotingSkipVote = 12;
   }
 
   google.protobuf.Timestamp created_at = 1;

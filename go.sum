@@ -42,8 +42,8 @@ github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGa
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gorilla/mux v1.8.1 h1:TuBL49tXwgrFYWhqrNgrUNEY92u81SPhu7sTdzQEiWY=
 github.com/gorilla/mux v1.8.1/go.mod h1:AKf9I4AEqPTmMytcMc0KkNouC66V3BtZ4qD5fmWSiMQ=
-github.com/goverland-labs/goverland-platform-events v0.3.5 h1:pVUDf3lndRgaLQ9CCkU3c6hKDB2uUBg/i290deDFkEE=
-github.com/goverland-labs/goverland-platform-events v0.3.5/go.mod h1:0/131HTR3cue1cDBVIoJ/iwgA+8f5MDQC8mUiqnouzE=
+github.com/goverland-labs/goverland-platform-events v0.3.6 h1:vpGehpJYNfKsNvufNySNiH5bSi18YNd/SFzmjRnGEi4=
+github.com/goverland-labs/goverland-platform-events v0.3.6/go.mod h1:0/131HTR3cue1cDBVIoJ/iwgA+8f5MDQC8mUiqnouzE=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 h1:UH//fgunKIs4JdUbpDl1VZCDaL56wXCB/5+wF6uHfaI=
 github.com/grpc-ecosystem/go-grpc-middleware v1.4.0/go.mod h1:g5qyo/la0ALbONm6Vbp88Yd8NsDy6rZz+RcrMPxvld8=
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 h1:Ovs26xHkKqVztRpIrF/92BcuyuQ/YW4NSIpoGtfXNho=

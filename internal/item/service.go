@@ -223,6 +223,8 @@ var inboxTimelineActionMap = map[TimelineAction]inbox.TimelineAction{
 	ProposalVotingQuorumReached: inbox.ProposalVotingQuorumReached,
 	ProposalVotingEnded:         inbox.ProposalVotingEnded,
 	DelegateCreateProposal:      inbox.DelegateCreateProposal,
+	DelegateVotingVoted:         inbox.DelegateVotingVoted,
+	DelegateVotingSkipVote:      inbox.DelegateVotingSkipVote,
 }
 
 func convertActionToExternal(action TimelineAction) inbox.TimelineAction {
