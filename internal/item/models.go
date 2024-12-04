@@ -15,6 +15,7 @@ type Type string
 const (
 	TypeDao      Type = "dao"
 	TypeProposal Type = "proposal"
+	TypeDelegate Type = "delegate"
 
 	None                        TimelineAction = ""
 	DaoCreated                  TimelineAction = "dao.created"
@@ -26,6 +27,9 @@ const (
 	ProposalVotingStarted       TimelineAction = "proposal.voting.started"
 	ProposalVotingQuorumReached TimelineAction = "proposal.voting.quorum_reached"
 	ProposalVotingEnded         TimelineAction = "proposal.voting.ended"
+	DelegateCreateProposal      TimelineAction = "delegate.proposal.created"
+	DelegateVotingVoted         TimelineAction = "delegate.voting.voted"
+	DelegateVotingSkipVote      TimelineAction = "delegate.voting.skip_vote"
 )
 
 type FeedItem struct {

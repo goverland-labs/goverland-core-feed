@@ -20,6 +20,7 @@ const (
 var feedItemTypeMap = map[Type]feedpb.FeedInfo_Type{
 	TypeDao:      feedpb.FeedInfo_DAO,
 	TypeProposal: feedpb.FeedInfo_Proposal,
+	TypeDelegate: feedpb.FeedInfo_Delegate,
 }
 
 var timelineActionsMap = map[TimelineAction]feedpb.FeedTimelineItem_TimelineAction{
@@ -32,6 +33,9 @@ var timelineActionsMap = map[TimelineAction]feedpb.FeedTimelineItem_TimelineActi
 	ProposalVotingStarted:       feedpb.FeedTimelineItem_ProposalVotingStarted,
 	ProposalVotingQuorumReached: feedpb.FeedTimelineItem_ProposalVotingQuorumReached,
 	ProposalVotingEnded:         feedpb.FeedTimelineItem_ProposalVotingEnded,
+	DelegateCreateProposal:      feedpb.FeedTimelineItem_DelegateCreateProposal,
+	DelegateVotingVoted:         feedpb.FeedTimelineItem_DelegateVotingVoted,
+	DelegateVotingSkipVote:      feedpb.FeedTimelineItem_DelegateVotingSkipVote,
 }
 
 type Server struct {
@@ -57,6 +61,7 @@ func (s *Server) GetByFilter(_ context.Context, req *feedpb.FeedByFilterRequest)
 	filters := []Filter{
 		SkipSpammed{},
 		SkipCanceled{},
+		SkipDelegates{}, // we don't want to see delegates events in the dao feed
 		PageFilter{Limit: limit, Offset: offset},
 		SortedByCreated{
 			Direction: DirectionDesc,

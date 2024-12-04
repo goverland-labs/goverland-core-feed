@@ -93,6 +93,18 @@ func (f SkipCanceled) Apply(db *gorm.DB) *gorm.DB {
 	return db.Where(`snapshot->>'state' != 'canceled'`)
 }
 
+type SkipDelegates struct {
+}
+
+func (f SkipDelegates) Apply(db *gorm.DB) *gorm.DB {
+	var (
+		dummy FeedItem
+		_     = dummy.Type
+	)
+
+	return db.Where(`type != ?`, TypeDelegate)
+}
+
 type SortedByActuality struct {
 }
 
