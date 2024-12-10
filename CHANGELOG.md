@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Feed item uniqueness condition
+
+### Added
+- Processing delegate created event
+
 ## [0.1.5] - 2024-12-04
 
 ### Added
