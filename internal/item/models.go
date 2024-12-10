@@ -30,6 +30,7 @@ const (
 	DelegateCreateProposal      TimelineAction = "delegate.proposal.created"
 	DelegateVotingVoted         TimelineAction = "delegate.voting.voted"
 	DelegateVotingSkipVote      TimelineAction = "delegate.voting.skip_vote"
+	DelegateCreated             TimelineAction = "delegate.created"
 )
 
 type FeedItem struct {

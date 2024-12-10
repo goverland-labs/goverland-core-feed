@@ -97,7 +97,7 @@ func (c *DaoConsumer) convertToFeedItem(pl pevents.DaoPayload, timeline Timeline
 	return &FeedItem{
 		DaoID:    pl.ID,
 		Type:     TypeDao,
-		Action:   timeline.LastAction(),
+		Action:   DaoUpdated,
 		Snapshot: b,
 		Timeline: timeline,
 	}, nil

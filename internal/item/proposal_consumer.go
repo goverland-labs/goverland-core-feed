@@ -138,7 +138,7 @@ func (c *ProposalConsumer) convertToFeedItem(pl pevents.ProposalPayload, timelin
 		DaoID:      pl.DaoID,
 		ProposalID: pl.ID,
 		Type:       TypeProposal,
-		Action:     timeline.LastAction(),
+		Action:     ProposalUpdated,
 		Snapshot:   b,
 		Timeline:   timeline,
 	}, nil
