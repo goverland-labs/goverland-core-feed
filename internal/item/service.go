@@ -187,7 +187,7 @@ func convertToExternalFeed(item *FeedItem) inbox.FeedPayload {
 		ProposalID:   item.ProposalID,
 		DiscussionID: item.DiscussionID,
 		Type:         convertFeedType(item.Type),
-		Action:       convertActionToExternal(item.Action),
+		Action:       convertActionToExternal(item.Timeline.LastAction()),
 		Snapshot:     item.Snapshot,
 		Timeline:     convertToExternalTimeline(item.Timeline),
 	}
