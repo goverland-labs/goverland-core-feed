@@ -66,6 +66,8 @@ func convertToTimeLineAction(action string) TimelineAction {
 		return DelegateVotingVoted
 	case pevents.SubjectDelegateVotingSkipVote:
 		return DelegateVotingSkipVote
+	case pevents.SubjectDelegateCreated:
+		return DelegateCreated
 	default:
 		return None
 	}
@@ -100,6 +102,7 @@ func (c *DelegatesConsumer) Start(ctx context.Context) error {
 		pevents.SubjectDelegateCreateProposal,
 		pevents.SubjectDelegateVotingVoted,
 		pevents.SubjectDelegateVotingSkipVote,
+		pevents.SubjectDelegateCreated,
 	} {
 		consumer, err := client.NewConsumer(ctx, c.conn, group, subj, c.handler(subj), opts...)
 		if err != nil {

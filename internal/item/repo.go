@@ -20,7 +20,8 @@ func (r *Repo) Save(item *FeedItem) error {
 	var (
 		_ = item.DaoID
 		_ = item.ProposalID
-		_ = item.DiscussionID
+		_ = item.Type
+		_ = item.Action
 	)
 
 	if item.ID == emptyID {
@@ -29,7 +30,12 @@ func (r *Repo) Save(item *FeedItem) error {
 
 	err := r.conn.
 		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "dao_id"}, {Name: "proposal_id"}},
+			Columns: []clause.Column{
+				{Name: "dao_id"},
+				{Name: "proposal_id"},
+				{Name: "type"},
+				{Name: "action"},
+			},
 			UpdateAll: true,
 		}).
 		Create(item).
