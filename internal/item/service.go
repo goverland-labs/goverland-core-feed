@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/goverland-labs/goverland-platform-events/events/core"
@@ -13,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 
+	"github.com/goverland-labs/goverland-core-feed/internal/pubsub"
 	"github.com/goverland-labs/goverland-core-feed/internal/subscriber"
 )
 
@@ -27,6 +29,7 @@ type DataProvider interface {
 	GetDaoItem(id uuid.UUID) (*FeedItem, error)
 	GetProposalItem(id string) (*FeedItem, error)
 	GetByFilters(filters []Filter) (FeedList, error)
+	GetLastItems(subscriberID string, lastUpdatedAt time.Time, limit int) ([]FeedItem, error)
 }
 
 type SubscriberProvider interface {
@@ -45,14 +48,17 @@ type Service struct {
 	events        Publisher
 	subscribers   SubscriberProvider
 	subscriptions SubscriptionProvider
+
+	notifier *pubsub.PubSub[string]
 }
 
-func NewService(r DataProvider, p Publisher, sub SubscriberProvider, sp SubscriptionProvider) (*Service, error) {
+func NewService(r DataProvider, p Publisher, sub SubscriberProvider, sp SubscriptionProvider, notifier *pubsub.PubSub[string]) (*Service, error) {
 	return &Service{
 		repo:          r,
 		events:        p,
 		subscribers:   sub,
 		subscriptions: sp,
+		notifier:      notifier,
 		cache:         make(map[string]FeedList),
 		cacheMu:       sync.RWMutex{},
 	}, nil
@@ -86,6 +92,10 @@ func (s *Service) GetProposalItem(_ context.Context, id string) (*FeedItem, erro
 	return item, nil
 }
 
+func (s *Service) GetLastItems(subscriberID string, lastUpdatedAt time.Time, limit int) ([]FeedItem, error) {
+	return s.repo.GetLastItems(subscriberID, lastUpdatedAt, limit)
+}
+
 func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bool) error {
 	defer func() {
 		s.invalidateCache(item)
@@ -100,6 +110,8 @@ func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bo
 	if err := s.repo.Save(item); err != nil {
 		return fmt.Errorf("can't save feed item: %w", err)
 	}
+
+	s.notifier.PublishNoWait(item.DaoID.String())
 
 	if !sendUpdates {
 		return nil

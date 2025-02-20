@@ -5,29 +5,38 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 
 	"github.com/goverland-labs/goverland-core-feed/internal/item"
+	"github.com/goverland-labs/goverland-core-feed/internal/pubsub"
 )
 
 const (
-	forcedFetchTime = 5 * time.Minute
+	forcedFetchTime = 1 * time.Minute
+
+	feedItemsLimit = 1000
 )
 
-type Service struct {
-	name     string
-	notifier *PubSub
+type FeedItemsProvider interface {
+	GetLastItems(subscriberID string, lastUpdatedAt time.Time, limit int) ([]item.FeedItem, error)
 }
 
-func NewService(name string, notifier *PubSub) *Service {
-	return &Service{name: name, notifier: notifier}
+type Service struct {
+	notifier *pubsub.PubSub[string]
+
+	feedItemsProvider FeedItemsProvider
+}
+
+func NewService(notifier *pubsub.PubSub[string], feedItemsProvider FeedItemsProvider) *Service {
+	return &Service{notifier: notifier, feedItemsProvider: feedItemsProvider}
 }
 
 func (s *Service) Watch(
 	ctx context.Context,
-	name string,
+	subscriberID uuid.UUID,
 	lastUpdatedAt time.Time,
-	handler func(entity item.FeedItem) error, // TODO generic?
+	handler func(entity item.FeedItem) error,
 ) error {
 	notificationsCh := s.notifier.Subscribe()
 	defer func() {
@@ -35,18 +44,31 @@ func (s *Service) Watch(
 	}()
 
 	for {
-		entities := []item.FeedItem{} // TODO fetch from db or read from notificationsCh, discuss ??
-		//if err != nil {
-		//	return fmt.Errorf("fail to fetch entites for subscription from database: %v", err)
-		//}
+		feedItems, err := s.feedItemsProvider.GetLastItems(subscriberID.String(), lastUpdatedAt, feedItemsLimit)
+		if err != nil {
+			return fmt.Errorf("fail to fetch last feed items: %v", err)
+		}
 
-		for _, entity := range entities {
-			err := handler(entity)
+		log.Info().
+			Int("count", len(feedItems)).
+			Str("subscriber", subscriberID.String()).
+			Msg("fetched feed items")
+
+		for _, feedItem := range feedItems {
+			err := handler(feedItem)
 			if err != nil {
-				return fmt.Errorf("fail to handle entity in subscription: %v", err)
+				return fmt.Errorf("fail to handle feed item in subscription: %v", err)
 			}
 
-			// TODO: update lastUpdatedAt
+			lastUpdatedAt = feedItem.UpdatedAt
+		}
+
+		log.Info().
+			Str("value", lastUpdatedAt.String()).
+			Msg("change lastUpdatedAt")
+
+		if len(feedItems) == feedItemsLimit {
+			continue
 		}
 
 		select {

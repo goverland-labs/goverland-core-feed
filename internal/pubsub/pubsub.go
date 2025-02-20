@@ -1,34 +1,34 @@
-package feedevent
+package pubsub
 
 import (
 	"sync"
 )
 
-type PubSub struct {
-	subs       map[chan interface{}]bool
+type PubSub[T any] struct {
+	subs       map[chan T]bool
 	bufferSize int
 	closed     bool
 
 	m sync.RWMutex
 }
 
-func NewPubSub(bufferSize int) *PubSub {
-	return &PubSub{
-		subs:       make(map[chan interface{}]bool),
+func NewPubSub[T any](bufferSize int) *PubSub[T] {
+	return &PubSub[T]{
+		subs:       make(map[chan T]bool),
 		bufferSize: bufferSize,
 	}
 }
 
-func (p *PubSub) Subscribe() chan interface{} {
+func (p *PubSub[T]) Subscribe() chan T {
 	p.m.Lock()
 	defer p.m.Unlock()
 
-	ch := make(chan interface{}, p.bufferSize)
+	ch := make(chan T, p.bufferSize)
 	p.subs[ch] = true
 	return ch
 }
 
-func (p *PubSub) Publish(msg interface{}) {
+func (p *PubSub[T]) Publish(msg T) {
 	p.m.RLock()
 	defer p.m.RUnlock()
 
@@ -40,7 +40,7 @@ func (p *PubSub) Publish(msg interface{}) {
 	}
 }
 
-func (p *PubSub) PublishNoWait(msg interface{}) {
+func (p *PubSub[T]) PublishNoWait(msg T) {
 	p.m.RLock()
 	defer p.m.RUnlock()
 
@@ -56,7 +56,7 @@ func (p *PubSub) PublishNoWait(msg interface{}) {
 	}
 }
 
-func (p *PubSub) Unsubscribe(ch chan interface{}) {
+func (p *PubSub[T]) Unsubscribe(ch chan T) {
 	p.m.Lock()
 	defer p.m.Unlock()
 
@@ -67,7 +67,7 @@ func (p *PubSub) Unsubscribe(ch chan interface{}) {
 	delete(p.subs, ch)
 }
 
-func (p *PubSub) Close() {
+func (p *PubSub[T]) Close() {
 	p.m.Lock()
 	defer p.m.Unlock()
 

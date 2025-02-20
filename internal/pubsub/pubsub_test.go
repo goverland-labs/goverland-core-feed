@@ -1,4 +1,4 @@
-package feedevent
+package pubsub
 
 import (
 	"testing"
