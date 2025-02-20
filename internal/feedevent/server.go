@@ -26,6 +26,8 @@ func NewServer(sp *Service) *Server {
 func (s *Server) EventsSubscribe(req *feedpb.EventsSubscribeRequest, stream grpc.ServerStreamingServer[feedpb.FeedItem]) error {
 	ctx := stream.Context()
 
+	log.Info().Msg("events subscribe start")
+
 	subscriberID, err := uuid.Parse(req.SubscriberId)
 	if err != nil {
 		log.Error().
