@@ -149,7 +149,7 @@ func (a *Application) initDataConsumers(nc *nats.Conn, pb *natsclient.Publisher)
 		return fmt.Errorf("item service: %w", err)
 	}
 
-	feedEventService := feedevent.NewService(feedItemsNotifier, a.itemService)
+	feedEventService := feedevent.NewService(feedItemsNotifier, service)
 
 	a.itemService = service
 	a.feedEventService = feedEventService
