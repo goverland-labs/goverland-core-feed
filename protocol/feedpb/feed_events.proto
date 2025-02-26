@@ -34,7 +34,6 @@ message Timeline {
 
 message DAO {
   google.protobuf.Timestamp created_at = 1;
-  google.protobuf.Timestamp updated_at = 2;
   string internal_id = 3;
   string original_id = 4;
   string name = 5;
@@ -46,7 +45,6 @@ message DAO {
 
 message Proposal {
   google.protobuf.Timestamp created_at = 1;
-  google.protobuf.Timestamp updated_at = 2;
   string id = 3;
   string dao_internal_id = 4;
   string author = 5;

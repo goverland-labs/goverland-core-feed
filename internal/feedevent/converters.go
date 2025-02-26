@@ -81,14 +81,13 @@ func daoSnapshotConverter(fItem item.FeedItem) (any, error) {
 
 	return &feedpb.FeedItem_Dao{
 		Dao: &feedpb.DAO{
-			CreatedAt:       timestamppb.Now(), // TODO
-			UpdatedAt:       timestamppb.Now(), // TODO
+			CreatedAt:       timestamppb.New(dPayload.CreatedAt),
 			InternalId:      dPayload.ID.String(),
 			OriginalId:      dPayload.Alias,
 			Name:            dPayload.Name,
 			Avatar:          dPayload.Avatar,
 			PopularityIndex: popularityIndex,
-			Verified:        false, // TODO
+			Verified:        dPayload.Verified,
 			Timeline:        timeline,
 		},
 	}, nil
@@ -111,8 +110,7 @@ func proposalSnapshotConverter(fItem item.FeedItem) (any, error) {
 
 	return &feedpb.FeedItem_Proposal{
 		Proposal: &feedpb.Proposal{
-			CreatedAt:     timestamppb.Now(), // TODO
-			UpdatedAt:     timestamppb.Now(), // TODO
+			CreatedAt:     timestamppb.New(time.Unix(int64(dPayload.Created), 0)),
 			Id:            dPayload.ID,
 			DaoInternalId: dPayload.DaoID.String(),
 			Author:        dPayload.Author,
