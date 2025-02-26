@@ -3,6 +3,7 @@ package feedevent
 import (
 	"encoding/json"
 	"errors"
+	"time"
 
 	pevents "github.com/goverland-labs/goverland-platform-events/events/core"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -119,7 +120,11 @@ func proposalSnapshotConverter(fItem item.FeedItem) (any, error) {
 			State:         dPayload.State,
 			Spam:          dPayload.Spam,
 			Timeline:      timeline,
-			// TODO: - type / privacy
+			Type:          dPayload.Type,
+			Privacy:       dPayload.Privacy,
+			Choices:       dPayload.Choices,
+			VoteStart:     timestamppb.New(time.Unix(int64(dPayload.Start), 0)),
+			VoteEnd:       timestamppb.New(time.Unix(int64(dPayload.End), 0)),
 		},
 	}, nil
 }

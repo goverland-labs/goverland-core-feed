@@ -25,7 +25,6 @@ enum FeedItemType {
   FEED_ITEM_TYPE_DAO = 1;
   FEED_ITEM_TYPE_PROPOSAL = 2;
   FEED_ITEM_TYPE_DELEGATE = 3;
-  FEED_ITEM_TYPE_VOTE = 4;
 }
 
 message Timeline {
@@ -55,6 +54,11 @@ message Proposal {
   string state = 7;
   bool spam = 8;
   repeated Timeline timeline = 9;
+  string type = 10;
+  string privacy = 11;
+  repeated string choices = 12;
+  google.protobuf.Timestamp vote_start = 13;
+  google.protobuf.Timestamp vote_end = 14;
 }
 
 message Delegate {
@@ -62,14 +66,6 @@ message Delegate {
   string address_to = 2;
   string dao_internal_id = 3;
   string proposal_id = 4;
-}
-
-message Vote {
-  google.protobuf.Timestamp created_at = 1;
-  google.protobuf.Timestamp updated_at = 2;
-  string dao_internal_id = 3;
-  string proposal_id = 4;
-  string voter_address = 5;
 }
 
 message FeedItem {
@@ -81,6 +77,5 @@ message FeedItem {
     DAO dao = 10;
     Proposal proposal = 11;
     Delegate delegate = 12;
-    Vote vote = 13;
   }
 }
