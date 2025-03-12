@@ -8,8 +8,9 @@ import (
 	pevents "github.com/goverland-labs/goverland-platform-events/events/core"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/goverland-labs/goverland-core-feed/internal/item"
 	"github.com/goverland-labs/goverland-core-feed/protocol/feedpb"
+
+	"github.com/goverland-labs/goverland-core-feed/internal/item"
 )
 
 var typesMapping = map[item.Type]feedpb.FeedItemType{
@@ -134,12 +135,19 @@ func delegateSnapshotConverter(fItem item.FeedItem) (any, error) {
 		return nil, err
 	}
 
+	var dueDate *timestamppb.Timestamp
+	if dPayload.DueDate != nil {
+		dueDate = timestamppb.New(*dPayload.DueDate)
+	}
+
 	return &feedpb.FeedItem_Delegate{
 		Delegate: &feedpb.Delegate{
 			AddressFrom:   dPayload.Initiator,
 			AddressTo:     dPayload.Delegator,
 			DaoInternalId: dPayload.DaoID.String(),
 			ProposalId:    dPayload.ProposalID,
+			Action:        string(fItem.Action),
+			DueDate:       dueDate,
 		},
 	}, nil
 }

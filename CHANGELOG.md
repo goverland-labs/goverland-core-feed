@@ -7,6 +7,12 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Update unique key for feed items
+
+### Added
+- Add action to delegates event
+
 ## [0.2.0] - 2025-03-18
 
 ### Added

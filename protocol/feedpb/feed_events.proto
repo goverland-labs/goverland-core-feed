@@ -64,6 +64,8 @@ message Delegate {
   string address_to = 2;
   string dao_internal_id = 3;
   string proposal_id = 4;
+  string action = 5;
+  optional google.protobuf.Timestamp due_date = 6;
 }
 
 message FeedItem {

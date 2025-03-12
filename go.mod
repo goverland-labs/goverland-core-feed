@@ -11,7 +11,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/goverland-labs/goverland-core-feed/protocol v0.0.0
-	github.com/goverland-labs/goverland-platform-events v0.3.10
+	github.com/goverland-labs/goverland-platform-events v0.3.10-0.20250314124539-53dc77be97da
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/nats-io/nats.go v1.30.2
