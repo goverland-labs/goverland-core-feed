@@ -1,6 +1,8 @@
 package item
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -70,6 +72,23 @@ func (r *Repo) GetProposalItem(id string) (*FeedItem, error) {
 	}
 
 	return nil, nil
+}
+
+func (r *Repo) GetLastItems(subscriberID string, lastUpdatedAt time.Time, limit int) ([]FeedItem, error) {
+	var feedItems []FeedItem
+
+	err := r.conn.
+		Joins("JOIN subscriptions ON subscriptions.dao_id = feed_items.dao_id").
+		Where("subscriptions.subscriber_id = ?", subscriberID).
+		Where("feed_items.updated_at > ?", lastUpdatedAt).
+		Order("feed_items.updated_at asc").
+		Limit(limit).
+		Find(&feedItems).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return feedItems, nil
 }
 
 func (r *Repo) GetByFilters(filters []Filter) (FeedList, error) {

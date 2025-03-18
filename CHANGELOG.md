@@ -7,6 +7,10 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+- New feed event subscription
+- New fields for proposal event type 
+
 ## [0.1.6] - 2024-12-23
 
 ### Changed

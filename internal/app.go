@@ -12,6 +12,8 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
+	"github.com/goverland-labs/goverland-core-feed/internal/feedevent"
+	"github.com/goverland-labs/goverland-core-feed/internal/pubsub"
 	"github.com/goverland-labs/goverland-core-feed/protocol/feedpb"
 
 	"github.com/goverland-labs/goverland-core-feed/internal/config"
@@ -29,9 +31,10 @@ type Application struct {
 	cfg     config.App
 	db      *gorm.DB
 
-	subscribers   *subscriber.Service
-	subscriptions *subscription.Service
-	itemService   *item.Service
+	subscribers      *subscriber.Service
+	subscriptions    *subscription.Service
+	itemService      *item.Service
+	feedEventService *feedevent.Service
 }
 
 func NewApplication(cfg config.App) (*Application, error) {
@@ -138,13 +141,18 @@ func (a *Application) initServices() error {
 }
 
 func (a *Application) initDataConsumers(nc *nats.Conn, pb *natsclient.Publisher) error {
+	feedItemsNotifier := pubsub.NewPubSub[string](1000) // TODO: const
 	repo := item.NewRepo(a.db)
-	service, err := item.NewService(repo, pb, a.subscribers, a.subscriptions)
+
+	service, err := item.NewService(repo, pb, a.subscribers, a.subscriptions, feedItemsNotifier)
 	if err != nil {
 		return fmt.Errorf("item service: %w", err)
 	}
 
+	feedEventService := feedevent.NewService(feedItemsNotifier, service)
+
 	a.itemService = service
+	a.feedEventService = feedEventService
 
 	dc, err := item.NewDaoConsumer(nc, service)
 	if err != nil {
@@ -185,6 +193,7 @@ func (a *Application) initAPI() error {
 	feedpb.RegisterSubscriberServer(srv, subscriber.NewServer(a.subscribers))
 	feedpb.RegisterSubscriptionServer(srv, subscription.NewServer(a.subscriptions))
 	feedpb.RegisterFeedServer(srv, item.NewServer(a.itemService))
+	feedpb.RegisterFeedEventsServer(srv, feedevent.NewServer(a.feedEventService))
 
 	a.manager.AddWorker(grpcsrv.NewGrpcServerWorker("API", srv, a.cfg.InternalAPI.Bind))
 
