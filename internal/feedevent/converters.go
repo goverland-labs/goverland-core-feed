@@ -134,14 +134,6 @@ func delegateSnapshotConverter(fItem item.FeedItem) (any, error) {
 		return nil, err
 	}
 
-	var timeline []*feedpb.Timeline
-	for _, tItem := range fItem.Timeline {
-		timeline = append(timeline, &feedpb.Timeline{
-			Action:    string(tItem.Action),
-			CreatedAt: timestamppb.New(tItem.CreatedAt),
-		})
-	}
-
 	return &feedpb.FeedItem_Delegate{
 		Delegate: &feedpb.Delegate{
 			AddressFrom:   dPayload.Initiator,
