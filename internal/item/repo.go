@@ -41,8 +41,10 @@ func (r *Repo) Save(item *FeedItem) error {
 				{Name: "action"},
 			},
 			TargetWhere: clause.Where{Exprs: []clause.Expression{
-				clause.Neq{Column: "type", Value: TypeDelegate}},
-			},
+				clause.Expr{
+					SQL: "type <> 'delegate'::text",
+				},
+			}},
 			UpdateAll: true,
 		})
 	}
