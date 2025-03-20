@@ -30,8 +30,10 @@ func (r *Repo) Save(item *FeedItem) error {
 		item.ID = uuid.New()
 	}
 
-	err := r.conn.
-		Clauses(clause.OnConflict{
+	conn := r.conn
+	// there is no unique key for delegate type
+	if item.Type != TypeDelegate {
+		conn = conn.Clauses(clause.OnConflict{
 			Columns: []clause.Column{
 				{Name: "dao_id"},
 				{Name: "proposal_id"},
@@ -39,7 +41,10 @@ func (r *Repo) Save(item *FeedItem) error {
 				{Name: "action"},
 			},
 			UpdateAll: true,
-		}).
+		})
+	}
+
+	err := conn.
 		Create(item).
 		Error
 
