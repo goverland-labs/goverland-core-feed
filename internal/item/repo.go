@@ -40,6 +40,9 @@ func (r *Repo) Save(item *FeedItem) error {
 				{Name: "type"},
 				{Name: "action"},
 			},
+			Where: clause.Where{Exprs: []clause.Expression{
+				clause.Neq{Column: "type", Value: TypeDelegate}},
+			},
 			UpdateAll: true,
 		})
 	}
