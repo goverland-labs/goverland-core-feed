@@ -142,8 +142,8 @@ func delegateSnapshotConverter(fItem item.FeedItem) (any, error) {
 
 	return &feedpb.FeedItem_Delegate{
 		Delegate: &feedpb.Delegate{
-			AddressFrom:   dPayload.Initiator,
-			AddressTo:     dPayload.Delegator,
+			AddressFrom:   dPayload.Delegator,
+			AddressTo:     dPayload.Initiator,
 			DaoInternalId: dPayload.DaoID.String(),
 			ProposalId:    dPayload.ProposalID,
 			Action:        string(fItem.Action),
