@@ -11,6 +11,12 @@ import (
 	"github.com/goverland-labs/goverland-core-feed/protocol/feedpb"
 )
 
+var subscriptionTypesMapping = map[feedpb.FeedItemType]item.Type{
+	feedpb.FeedItemType_FEED_ITEM_TYPE_DAO:      item.TypeDao,
+	feedpb.FeedItemType_FEED_ITEM_TYPE_PROPOSAL: item.TypeProposal,
+	feedpb.FeedItemType_FEED_ITEM_TYPE_DELEGATE: item.TypeDelegate,
+}
+
 type Server struct {
 	feedpb.UnimplementedFeedEventsServer
 
@@ -37,7 +43,22 @@ func (s *Server) EventsSubscribe(req *feedpb.EventsSubscribeRequest, stream grpc
 		return status.Error(codes.InvalidArgument, "invalid subscriber id")
 	}
 
-	err = s.service.Watch(ctx, subscriberID, req.LastUpdatedAt.AsTime(), func(entity item.FeedItem) error {
+	var fTypes []item.Type
+	for _, t := range req.GetSubscriptionTypes() {
+		fType, ok := subscriptionTypesMapping[t]
+		if !ok {
+			log.Error().
+				Str("subscriber", req.SubscriberId).
+				Str("type", t.String()).
+				Msg("unknown feed item type")
+
+			return status.Error(codes.InvalidArgument, "unknown feed item type")
+		}
+
+		fTypes = append(fTypes, fType)
+	}
+
+	err = s.service.Watch(ctx, subscriberID, fTypes, req.LastUpdatedAt.AsTime(), func(entity item.FeedItem) error {
 		feedItem, err := convertToFeedItem(entity)
 		if err != nil {
 			log.Error().
