@@ -68,6 +68,10 @@ func convertToTimeLineAction(action string) TimelineAction {
 		return DelegateVotingSkipVote
 	case pevents.SubjectDelegateCreated:
 		return DelegateCreated
+	case pevents.SubjectDelegateDelegationExpired:
+		return DelegateDelegationExpired
+	case pevents.SubjectDelegateDelegationExpiringSoon:
+		return DelegateDelegationExpiringSoon
 	default:
 		return None
 	}
@@ -99,10 +103,9 @@ func (c *DelegatesConsumer) Start(ctx context.Context) error {
 	}
 
 	for _, subj := range []string{
-		pevents.SubjectDelegateCreateProposal,
-		pevents.SubjectDelegateVotingVoted,
 		pevents.SubjectDelegateVotingSkipVote,
-		pevents.SubjectDelegateCreated,
+		pevents.SubjectDelegateDelegationExpiringSoon,
+		pevents.SubjectDelegateDelegationExpired,
 	} {
 		consumer, err := client.NewConsumer(ctx, c.conn, group, subj, c.handler(subj), opts...)
 		if err != nil {

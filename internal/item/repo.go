@@ -30,16 +30,26 @@ func (r *Repo) Save(item *FeedItem) error {
 		item.ID = uuid.New()
 	}
 
-	err := r.conn.
-		Clauses(clause.OnConflict{
+	conn := r.conn
+	// there is no unique key for delegate type
+	if item.Type != TypeDelegate {
+		conn = conn.Clauses(clause.OnConflict{
 			Columns: []clause.Column{
 				{Name: "dao_id"},
 				{Name: "proposal_id"},
 				{Name: "type"},
 				{Name: "action"},
 			},
+			TargetWhere: clause.Where{Exprs: []clause.Expression{
+				clause.Expr{
+					SQL: "type <> 'delegate'::text",
+				},
+			}},
 			UpdateAll: true,
-		}).
+		})
+	}
+
+	err := conn.
 		Create(item).
 		Error
 
@@ -74,13 +84,19 @@ func (r *Repo) GetProposalItem(id string) (*FeedItem, error) {
 	return nil, nil
 }
 
-func (r *Repo) GetLastItems(subscriberID string, lastUpdatedAt time.Time, limit int) ([]FeedItem, error) {
+func (r *Repo) GetLastItems(subscriberID string, fTypes []Type, lastUpdatedAt time.Time, limit int) ([]FeedItem, error) {
 	var feedItems []FeedItem
 
-	err := r.conn.
+	query := r.conn.
 		Joins("JOIN subscriptions ON subscriptions.dao_id = feed_items.dao_id").
 		Where("subscriptions.subscriber_id = ?", subscriberID).
-		Where("feed_items.updated_at > ?", lastUpdatedAt).
+		Where("feed_items.updated_at > ?", lastUpdatedAt)
+
+	if len(fTypes) > 0 {
+		query = query.Where("feed_items.type IN ?", fTypes)
+	}
+
+	err := query.
 		Order("feed_items.updated_at asc").
 		Limit(limit).
 		Find(&feedItems).Error

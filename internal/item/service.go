@@ -29,7 +29,7 @@ type DataProvider interface {
 	GetDaoItem(id uuid.UUID) (*FeedItem, error)
 	GetProposalItem(id string) (*FeedItem, error)
 	GetByFilters(filters []Filter) (FeedList, error)
-	GetLastItems(subscriberID string, lastUpdatedAt time.Time, limit int) ([]FeedItem, error)
+	GetLastItems(subscriberID string, fTypes []Type, lastUpdatedAt time.Time, limit int) ([]FeedItem, error)
 }
 
 type SubscriberProvider interface {
@@ -92,8 +92,8 @@ func (s *Service) GetProposalItem(_ context.Context, id string) (*FeedItem, erro
 	return item, nil
 }
 
-func (s *Service) GetLastItems(subscriberID string, lastUpdatedAt time.Time, limit int) ([]FeedItem, error) {
-	return s.repo.GetLastItems(subscriberID, lastUpdatedAt, limit)
+func (s *Service) GetLastItems(subscriberID string, fTypes []Type, lastUpdatedAt time.Time, limit int) ([]FeedItem, error) {
+	return s.repo.GetLastItems(subscriberID, fTypes, lastUpdatedAt, limit)
 }
 
 func (s *Service) HandleItem(ctx context.Context, item *FeedItem, sendUpdates bool) error {
