@@ -19,7 +19,7 @@ const (
 )
 
 type FeedItemsProvider interface {
-	GetLastItems(subscriberID string, lastUpdatedAt time.Time, limit int) ([]item.FeedItem, error)
+	GetLastItems(subscriberID string, fTypes []item.Type, lastUpdatedAt time.Time, limit int) ([]item.FeedItem, error)
 }
 
 type Service struct {
@@ -32,19 +32,14 @@ func NewService(notifier *pubsub.PubSub[string], feedItemsProvider FeedItemsProv
 	return &Service{notifier: notifier, feedItemsProvider: feedItemsProvider}
 }
 
-func (s *Service) Watch(
-	ctx context.Context,
-	subscriberID uuid.UUID,
-	lastUpdatedAt time.Time,
-	handler func(entity item.FeedItem) error,
-) error {
+func (s *Service) Watch(ctx context.Context, subscriberID uuid.UUID, fTypes []item.Type, lastUpdatedAt time.Time, handler func(entity item.FeedItem) error) error {
 	notificationsCh := s.notifier.Subscribe()
 	defer func() {
 		s.notifier.Unsubscribe(notificationsCh)
 	}()
 
 	for {
-		feedItems, err := s.feedItemsProvider.GetLastItems(subscriberID.String(), lastUpdatedAt, feedItemsLimit)
+		feedItems, err := s.feedItemsProvider.GetLastItems(subscriberID.String(), fTypes, lastUpdatedAt, feedItemsLimit)
 		if err != nil {
 			return fmt.Errorf("fail to fetch last feed items: %v", err)
 		}
